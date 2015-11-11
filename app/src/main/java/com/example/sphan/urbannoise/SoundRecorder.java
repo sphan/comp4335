@@ -3,6 +3,7 @@ package com.example.sphan.urbannoise;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Environment;
+import android.util.Log;
 
 import java.io.IOException;
 
@@ -11,6 +12,7 @@ import java.io.IOException;
  */
 public class SoundRecorder {
     private static SoundRecorder ourInstance = new SoundRecorder();
+    private final static String TAG = SoundRecorder.class.getSimpleName();
 
     private MediaRecorder myAudioRecorder;
     private String outputFile;
@@ -23,15 +25,19 @@ public class SoundRecorder {
     {
         try
         {
+            Log.d(TAG, "start recording using MIC");
             myAudioRecorder.prepare();
             myAudioRecorder.start();
+            Log.d(TAG, "recording started");
         }
         catch (IllegalStateException e)
         {
+            Log.d(TAG, "IllegalStateException happened");
             e.printStackTrace();
         }
         catch (IOException e)
         {
+            Log.d(TAG, "IOException happned");
             e.printStackTrace();
         }
     }
@@ -75,11 +81,13 @@ public class SoundRecorder {
 
     private void createMediaRecorder()
     {
+        Log.d(TAG, "start creating MediaRecorder");
         myAudioRecorder = new MediaRecorder();
         myAudioRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         myAudioRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
         myAudioRecorder.setAudioEncoder(MediaRecorder.OutputFormat.AMR_NB);
         myAudioRecorder.setOutputFile(outputFile);
+        Log.d(TAG, "finish creating MediaRecorder");
     }
 
 }

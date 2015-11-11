@@ -6,8 +6,15 @@
     <string name="longitude_text_view">Longitude</string>
     <string name="current_location_button">Get Current Location</string>
     <string name="record_sound_button">Record Sound</string>
+
+    <string name="start_record_button">Start Recording</string>
+    <string name="stop_record_button">Stop Recording</string>
+    <string name="start_play_button">Start Playing</string>
+    <string name="stop_play_button">Stop Playing</string>
+
     <string name="google_api_key">AIzaSyC7lS2fQyY3lo7a66cMeHJWgznoa-TFMdg</string>
     
     <integer name="google_play_services_version">7095000</integer>
     <string name="title_activity_sound_recorder">SoundRecorder</string>
+    <string name="title_activity_sound_recording">SoundRecordingActivity</string>
 </resources>

@@ -21,5 +21,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/record_sound_button"
-        android:id="@+id/recordSoundButton" />
+        android:id="@+id/recordSoundButton"
+        android:onClick="recordSound"/>
 </LinearLayout>

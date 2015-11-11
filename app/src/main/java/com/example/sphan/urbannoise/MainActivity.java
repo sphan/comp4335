@@ -66,4 +66,10 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, MyLocationActivity.class);
         startActivity(intent);
     }
+
+    public void recordSound(View view)
+    {
+        Intent intent = new Intent(this, SoundRecordingActivity.class);
+        startActivity(intent);
+    }
 }
