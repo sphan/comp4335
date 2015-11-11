@@ -9,7 +9,7 @@
     android:orientation="vertical"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:showIn="@layout/activity_my_location"
-    tools:context="com.example.sphan.urbannoise.MyLocation">
+    tools:context="com.example.sphan.urbannoise.MyLocationActivity">
 
     <TextView
         android:layout_width="match_parent"

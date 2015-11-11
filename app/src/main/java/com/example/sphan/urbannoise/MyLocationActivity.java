@@ -1,7 +1,6 @@
 package com.example.sphan.urbannoise;
 
 import android.location.Location;
-import android.location.LocationListener;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -17,11 +16,11 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
-public class MyLocation extends AppCompatActivity implements
+public class MyLocationActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
 
-    private static final String TAG = MyLocation.class.getSimpleName();
+    private static final String TAG = MyLocationActivity.class.getSimpleName();
     private static final long LOCATION_UPDATE_INTERVAL = 5 * 1000; // 5 milliseconds
 
     private GoogleApiClient mGoogleApiClient;
@@ -173,8 +172,7 @@ public class MyLocation extends AppCompatActivity implements
 
         if (mGoogleApiClient.isConnected() == true)
         {
-            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient,
-                    (com.google.android.gms.location.LocationListener) this);
+            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
             mGoogleApiClient.disconnect();
         }
     }

@@ -1,29 +1,85 @@
 package com.example.sphan.urbannoise;
 
-import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.view.View;
+import android.media.MediaPlayer;
+import android.media.MediaRecorder;
+import android.os.Environment;
 
-public class SoundRecorder extends AppCompatActivity {
+import java.io.IOException;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_sound_recorder);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+/**
+ * Created by sphan on 11/11/2015.
+ */
+public class SoundRecorder {
+    private static SoundRecorder ourInstance = new SoundRecorder();
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+    private MediaRecorder myAudioRecorder;
+    private String outputFile;
+
+    public static SoundRecorder getInstance() {
+        return ourInstance;
+    }
+
+    public void startRecording()
+    {
+        try
+        {
+            myAudioRecorder.prepare();
+            myAudioRecorder.start();
+        }
+        catch (IllegalStateException e)
+        {
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public void stopRecording()
+    {
+        myAudioRecorder.stop();
+        myAudioRecorder.release();
+        myAudioRecorder = null;
+    }
+
+    public void playRecording()
+    {
+        MediaPlayer mediaPlayer = new MediaPlayer();
+
+        try
+        {
+            mediaPlayer.setDataSource(outputFile);
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        try
+        {
+            mediaPlayer.prepare();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        mediaPlayer.start();
+    }
+
+    private SoundRecorder() {
+        outputFile = Environment.getExternalStorageDirectory().getAbsolutePath() + "/recording.3gp";
+        createMediaRecorder();
+    }
+
+    private void createMediaRecorder()
+    {
+        myAudioRecorder = new MediaRecorder();
+        myAudioRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        myAudioRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        myAudioRecorder.setAudioEncoder(MediaRecorder.OutputFormat.AMR_NB);
+        myAudioRecorder.setOutputFile(outputFile);
     }
 
 }
