@@ -100,4 +100,10 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d(TAG, "device ID: " + deviceID);
     }
+
+    public void goToMap(View view)
+    {
+        Intent intent = new Intent(this, MyMapActivity.class);
+        startActivity(intent);
+    }
 }
