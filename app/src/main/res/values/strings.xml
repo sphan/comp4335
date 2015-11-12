@@ -6,6 +6,7 @@
     <string name="longitude_text_view">Longitude</string>
     <string name="current_location_button">Get Current Location</string>
     <string name="record_sound_button">Record Sound</string>
+    <string name="get_device_id_button">Get Device ID</string>
 
     <string name="start_record_button">Start Recording</string>
     <string name="stop_record_button">Stop Recording</string>
