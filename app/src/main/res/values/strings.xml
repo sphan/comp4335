@@ -20,6 +20,10 @@
     <string name="title_activity_sound_recorder">SoundRecorder</string>
     <string name="title_activity_sound_recording">SoundRecordingActivity</string>
 
+    <string name="Cancel">Cancel</string>
+    <string name="gps_network_not_enabled">This application requires the use of GPS and Network for location detect. Please go to Settings and enable Location and Network usage.</string>
+    <string name="open_location_settings">Go to Settings</string>
+
 <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_my_map">MyMapActivity</string>

@@ -25,4 +25,11 @@
         android:text="@string/longitude_text_view"
         android:id="@+id/longitudeTextview" />
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Time last updated"
+        android:id="@+id/lastUpdatedTextView" />
+
 </LinearLayout>

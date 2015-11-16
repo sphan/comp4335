@@ -177,7 +177,8 @@ public class SoundRecorder {
     private void writeAudioDataToFile()
     {
 //        String filePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/voice8K16bitmono.pcm";
-        short sData[] = new short[BufferElement2Rec];
+//        short sData[] = new short[BufferElement2Rec];
+        byte bData[] = new byte[BufferElement2Rec * 2];
 
         FileOutputStream os = null;
         try
@@ -191,11 +192,11 @@ public class SoundRecorder {
 
         while (isRecording == true)
         {
-            recorder.read(sData, 0, BufferElement2Rec);
-            Log.d(TAG, "short writing to file " + sData.toString());
+            recorder.read(bData, 0, BufferElement2Rec);
+            Log.d(TAG, "byte writing to file " + bData.toString());
             try
             {
-                byte bData[] = short2byte(sData);
+//                byte bData[] = short2byte(sData);
                 os.write(bData, 0, BufferElement2Rec * BytesPerElement);
             }
             catch (IOException e)
