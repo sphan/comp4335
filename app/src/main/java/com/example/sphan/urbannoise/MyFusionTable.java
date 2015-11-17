@@ -95,7 +95,10 @@ public class MyFusionTable {
         }
 
         private String postRow(double noise, double lon, double lat, String dateTime){
+            if(noise == 0){
 
+                return "";
+            }
             try {
 
                 //String access_tok="ya29.MwIRhZEjgn4GCYFL1hP8l79Hb6o3FDqAOfqGU4JnRJlCWwgjxB8tnxabqHNy-Fvmopcm";
