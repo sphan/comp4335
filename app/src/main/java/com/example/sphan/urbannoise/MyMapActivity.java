@@ -43,6 +43,7 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
+import java.util.concurrent.ExecutionException;
 
 public class MyMapActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks,
@@ -179,6 +180,34 @@ public class MyMapActivity extends AppCompatActivity implements
 //        australia.setLatitude(AUSTRALIA.latitude);
 //        australia.setLongitude(AUSTRALIA.longitude);
 //        updateLocationOnMap(australia);
+
+
+
+        MyFusionTable ft = new MyFusionTable();
+
+        try {
+            ft.getRows();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        ArrayList<Double> prevLat = ft.getLat();
+        ArrayList<Double> prevLon = ft.getLon();
+        ArrayList<Double> prevNoise = ft.getNoise();
+        //ArrayList<LatLng> prevLatLon = new ArrayList<LatLng>();
+        int counter = 0;
+        LatLng loc;
+        while(!prevLat.isEmpty() && !prevLon.isEmpty() && prevLat.size()>counter && prevLon.size()>counter){
+            loc = new LatLng(prevLat.get(counter),prevLon.get(counter));
+
+            int[] rgb = getColour(prevNoise.get(counter));
+            addRedCircleOnMap(loc,rgb[0],rgb[1],rgb[2]);
+            counter++;
+        }
+
+
+
     }
 
     @Override
