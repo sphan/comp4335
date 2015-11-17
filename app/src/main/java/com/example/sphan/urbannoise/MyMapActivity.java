@@ -183,10 +183,20 @@ public class MyMapActivity extends AppCompatActivity implements
 
 
 
+
         MyFusionTable ft = new MyFusionTable();
+        String currentDate = DateFormat.getDateTimeInstance().format(new Date());
+        String[] splits = currentDate.split(" ");
+        int splitCount = 0;
+        while(!splits[splitCount].contains(":")){
+            splitCount++;
+
+        }
+        String[] splitTime = splits[splitCount].split(":");
 
         try {
             ft.getRows();
+            ft.setHour(Integer.parseInt(splitTime[0]),currentDate.contains("am"));
         } catch (ExecutionException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
@@ -205,6 +215,7 @@ public class MyMapActivity extends AppCompatActivity implements
             addRedCircleOnMap(loc,rgb[0],rgb[1],rgb[2]);
             counter++;
         }
+
 
 
 
@@ -272,8 +283,7 @@ public class MyMapActivity extends AppCompatActivity implements
         }
 
         if (mCurrentLocation == null &&
-                (mGoogleApiClient.isConnected() && mLocationRequest != null))
-        {
+                (mGoogleApiClient.isConnected() && mLocationRequest != null)) {
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
             mLastUpdatedTime = Constants.DATE_FORMAT.format(new Date());
             updateLocationOnMap(mCurrentLocation);
