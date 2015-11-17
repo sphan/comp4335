@@ -57,6 +57,7 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
     private boolean gpsEnabled;
     private boolean networkEnabled;
     private boolean isPaused;
+    private MyFusionTable ft = new MyFusionTable();
 
 
     @Override
@@ -391,6 +392,7 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
 //        deviceTextView.setText(deviceID);
 
         dataTable.addView(row);
+        ft.postRow(10,mCurrentLocation.getLongitude(),mCurrentLocation.getLatitude());
     }
 
     private void startGetLocation()
