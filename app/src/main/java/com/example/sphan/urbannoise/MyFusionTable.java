@@ -3,6 +3,8 @@ package com.example.sphan.urbannoise;
 import android.os.AsyncTask;
 import android.provider.Settings;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -94,6 +96,16 @@ public class MyFusionTable {
     public ArrayList<String> getDate(){
         ArrayList<String> retDate = new ArrayList<String>(date);
         return retDate;
+    }
+
+    public ArrayList<LatLng> getLoc(){
+        ArrayList<LatLng> retLoc = new ArrayList<LatLng>();
+        int counter = 0;
+        while (counter< lat.size()) {
+            retLoc.add(new LatLng(lat.get(counter),lon.get(counter)));
+            counter++;
+        }
+        return retLoc;
     }
 
 
