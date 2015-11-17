@@ -41,6 +41,7 @@ public class MyFusionTable {
     static public ArrayList<Double> lat = new ArrayList<Double>();
     static public ArrayList<Double> lon = new ArrayList<Double>();
     static public ArrayList<String> date = new ArrayList<String>();
+    static public ArrayList<LatLng> loc = new ArrayList<LatLng>();
 
     public MyFusionTable()
     {
@@ -64,6 +65,8 @@ public class MyFusionTable {
     public void getRows() throws ExecutionException, InterruptedException {
         MyAsyncParams params = new MyAsyncParams(FusionControls.GET_ROWS);
         new MyAsyncTask ().execute(params).get();
+
+        setLoc();
         //task.execute(params);
         //noiseF = task.getNoise();
         //latF = task.getLat();
@@ -97,15 +100,20 @@ public class MyFusionTable {
         ArrayList<String> retDate = new ArrayList<String>(date);
         return retDate;
     }
-
     public ArrayList<LatLng> getLoc(){
-        ArrayList<LatLng> retLoc = new ArrayList<LatLng>();
+        ArrayList<LatLng> retLoc = new ArrayList<LatLng>(loc);
+        return retLoc;
+    }
+
+
+    public void setLoc(){
+        //ArrayList<LatLng> retLoc = new ArrayList<LatLng>();
         int counter = 0;
         while (counter< lat.size()) {
-            retLoc.add(new LatLng(lat.get(counter),lon.get(counter)));
+            loc.add(new LatLng(lat.get(counter),lon.get(counter)));
             counter++;
         }
-        return retLoc;
+        //return retLoc;
     }
 
 
@@ -125,6 +133,7 @@ public class MyFusionTable {
                     lat.remove(counter);
                     lon.remove(counter);
                     noise.remove(counter);
+                    loc.remove(counter);
                     System.out.println("nonononon");
                 }
 
@@ -135,6 +144,7 @@ public class MyFusionTable {
                 lat.remove(counter);
                 lon.remove(counter);
                 noise.remove(counter);
+                loc.remove(counter);
                 System.out.println("nonononon");
             }
 
