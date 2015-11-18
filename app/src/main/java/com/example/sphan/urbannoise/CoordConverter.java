@@ -2,6 +2,7 @@ package com.example.sphan.urbannoise;
 
 import java.lang.Math;
 import android.util.Log;
+
 /**
  * Created by amac868 on 17/11/2015.
  * Adapted from https://github.com/proj4js/mgrs/blob/master/dist/mgrs.js
@@ -19,7 +20,6 @@ public class CoordConverter {
     private static double eccsq = 0.00669438;
     private static double eccPrimeSq = (eccsq) / (1 - eccsq);
 
-
     private final double lat;  //Latitude
     private final double latRad;
     private final double lng;  //Longitude
@@ -33,6 +33,13 @@ public class CoordConverter {
     private int zone;
     private final char zoneLetter;
 
+    private final double[] gridpoint;
+
+    /*
+     * From a given (lat,long) generate the zone, zoneLetter, easting and northing (UTM coord)
+     * Note that MGRS is based upon UTM so it is simple to convert UTM to MGRS
+     * The gridpoint is the (lat,long) -> MGRS -> (lat',long')
+     */
     public CoordConverter(double latitude, double longitude) {
 
         lng = longitude;
@@ -89,6 +96,7 @@ public class CoordConverter {
         northing = Math.round(UTMNorthing);
         easting =  Math.round(UTMEasting);
         zoneLetter = letterDesignation();
+        gridpoint = MGRStoLL();
     }
 
     private char letterDesignation() {
@@ -212,7 +220,7 @@ public class CoordConverter {
     }
 
 
-    public double[] MGRStoLL() {
+    private double[] MGRStoLL() {
         double e1 = (1 - Math.sqrt(1 - eccsq)) / (1 + Math.sqrt(1 - eccsq));
         double N1, T1, C1, R1, D, M;
         double mu, phi1Rad;
@@ -249,6 +257,9 @@ public class CoordConverter {
         return new double[]{latitude,longitude};
     }
 
+    public double[] getGridpoint() {
+        return this.gridpoint;
+    }
     public double getLatitude() {
         return this.lat;
     }
