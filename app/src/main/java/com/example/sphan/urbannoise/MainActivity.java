@@ -22,20 +22,22 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
+    private String deviceID;
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+//        fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+//            }
+//        });
 
         try {
             int v = getPackageManager().getPackageInfo("com.google.android.gms", 0 ).versionCode;
@@ -44,6 +46,8 @@ public class MainActivity extends AppCompatActivity {
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
+
+        getDeviceID();
     }
 
     @Override
@@ -82,6 +86,25 @@ public class MainActivity extends AppCompatActivity {
 
     public void getDeviceID(View view)
     {
+        getDeviceID();
+    }
+
+    public void goToMap(View view)
+    {
+        Intent intent = new Intent(this, MyMapActivity.class);
+        intent.putExtra("deviceID", deviceID);
+        startActivity(intent);
+    }
+
+    public void startUrbanNoiseDetection(View view)
+    {
+        Intent intent = new Intent(this, UrbanNoiseActivity.class);
+        intent.putExtra("deviceID", deviceID);
+        startActivity(intent);
+    }
+
+    private void getDeviceID()
+    {
         final TelephonyManager tm = (TelephonyManager) getBaseContext().getSystemService(Context.TELEPHONY_SERVICE);
         final String tmDevice, tmSerial, androidID;
 
@@ -96,14 +119,8 @@ public class MainActivity extends AppCompatActivity {
         }
         UUID deviceUUID = new UUID(androidID.hashCode(), ((long)tmDevice.hashCode() << 32) | tmSerialHash);
 
-        String deviceID = deviceUUID.toString();
+        deviceID = deviceUUID.toString();
 
         Log.d(TAG, "device ID: " + deviceID);
-    }
-
-    public void goToMap(View view)
-    {
-        Intent intent = new Intent(this, MyMapActivity.class);
-        startActivity(intent);
     }
 }

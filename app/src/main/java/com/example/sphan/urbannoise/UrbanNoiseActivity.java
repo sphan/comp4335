@@ -1,5 +1,6 @@
 package com.example.sphan.urbannoise;
 
+import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -8,14 +9,19 @@ import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.Settings;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,31 +33,21 @@ import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import org.w3c.dom.Text;
+
 import java.text.DateFormat;
 import java.util.Date;
 
-public class MyMapActivity extends AppCompatActivity implements
+public class UrbanNoiseActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener{
 
-//    private static final LatLng home = new LatLng(-33.8579953, 150.9935675);
-    private GoogleMap googleMap;
-
-    private static final String TAG = MyMapActivity.class.getSimpleName();
+    private static final String TAG = UrbanNoiseActivity.class.getSimpleName();
     private static final long LOCATION_UPDATE_INTERVAL = 5 * 1000; // 5 milliseconds
-
-    private static final float CIRCLE_RADIUS = 1;
 
 //    private static final LatLng AUSTRALIA = new LatLng(35.3080, 149.1245);
 
@@ -60,16 +56,15 @@ public class MyMapActivity extends AppCompatActivity implements
     protected final static String LAST_UPDATED_TIME_STRING_KEY = "last-updated-time-string-key";
 
     private GoogleApiClient mGoogleApiClient;
-//    private Location mLastLocation;
+    //    private Location mLastLocation;
     private String mLastUpdatedTime;
     private String deviceID;
     private Location mCurrentLocation;
     private LocationRequest mLocationRequest;
     private LocationManager locationManager;
-
-    private TextView latitudeTextView;
-    private TextView longitudeTextView;
-    private TextView timeLastUpdatedTextView;
+    private Button startButton;
+    private Button endButton;
+    private Button viewOnMapButton;
 
     private boolean mRequestingLocationUpdates;
     private boolean gpsEnabled;
@@ -78,7 +73,7 @@ public class MyMapActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_my_map);
+        setContentView(R.layout.activity_urban_noise);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -91,27 +86,14 @@ public class MyMapActivity extends AppCompatActivity implements
 //            }
 //        });
 
-        try
-        {
-            if (googleMap == null)
-            {
-                googleMap = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
-            }
-            googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-//            Marker homeMK = googleMap.addMarker(new MarkerOptions().position(currentLatLng).title("Home"));
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-
         updateValuesFromBundle(savedInstanceState);
 
         buildGoogleApiClient();
 
-        latitudeTextView = (TextView) findViewById(R.id.latitudeTextview);
-        longitudeTextView = (TextView) findViewById(R.id.longitudeTextview);
-        timeLastUpdatedTextView = (TextView) findViewById(R.id.lastUpdatedTextView);
+        startButton = (Button) findViewById(R.id.start_button);
+        endButton = (Button) findViewById(R.id.end_button);
+        viewOnMapButton = (Button) findViewById(R.id.viewInMapButton);
+
         mRequestingLocationUpdates = true;
         gpsEnabled = false;
         networkEnabled = false;
@@ -123,11 +105,6 @@ public class MyMapActivity extends AppCompatActivity implements
         {
             deviceID = extras.getString("deviceID");
         }
-
-//        Location australia = new Location(Settings.Secure.LOCATION_MODE);
-//        australia.setLatitude(AUSTRALIA.latitude);
-//        australia.setLongitude(AUSTRALIA.longitude);
-//        updateLocationOnMap(australia);
     }
 
     @Override
@@ -161,6 +138,8 @@ public class MyMapActivity extends AppCompatActivity implements
         // (http://developer.android.com/reference/com/google/android/gms/location/LocationListener.html).
         LocationServices.FusedLocationApi.requestLocationUpdates(
                 mGoogleApiClient, mLocationRequest, this);
+
+        mLastUpdatedTime = DateFormat.getDateTimeInstance().format(new Date());
     }
 
     @Override
@@ -190,13 +169,12 @@ public class MyMapActivity extends AppCompatActivity implements
         {
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
             mLastUpdatedTime = DateFormat.getDateTimeInstance().format(new Date());
-            updateLocationOnMap(mCurrentLocation);
-//            updateUI();
         }
 
         if (mRequestingLocationUpdates)
         {
             startLocationUpdates();
+            updateTable();
         }
     }
 
@@ -261,9 +239,7 @@ public class MyMapActivity extends AppCompatActivity implements
         mLastUpdatedTime = DateFormat.getDateTimeInstance().format(new Date());
 
         Log.d(TAG, "my location: " + mCurrentLocation.toString());
-        updateLocationOnMap(location);
-        addRedCircleOnMap(new LatLng(location.getLatitude(), location.getLongitude()));
-//        updateUI();
+        updateTable();
     }
 
     public void onSaveInstanceState(Bundle savedInstanceState) {
@@ -271,15 +247,6 @@ public class MyMapActivity extends AppCompatActivity implements
         savedInstanceState.putParcelable(LOCATION_KEY, mCurrentLocation);
         savedInstanceState.putString(LAST_UPDATED_TIME_STRING_KEY, mLastUpdatedTime);
         super.onSaveInstanceState(savedInstanceState);
-    }
-
-    public void addRedCircleOnMap(LatLng latLng)
-    {
-        googleMap.addCircle(new CircleOptions()
-                .center(latLng)
-                .radius(CIRCLE_RADIUS)
-                .fillColor(Color.RED)
-                .strokeColor(Color.RED));
     }
 
 //    @Override
@@ -335,8 +302,8 @@ public class MyMapActivity extends AppCompatActivity implements
             {
                 deviceID = savedInstanceState.getString("deviceID");
                 Log.d(TAG, "deviceID: " + deviceID);
+                updateTable();
             }
-            updateUI();
         }
     }
 
@@ -364,81 +331,31 @@ public class MyMapActivity extends AppCompatActivity implements
         dialog.show();
     }
 
-    private void updateUI() {
-        if (mCurrentLocation != null)
-        {
-            latitudeTextView.setText(String.valueOf(mCurrentLocation.getLatitude()));
-            longitudeTextView.setText(String.valueOf(mCurrentLocation.getLongitude()));
-            timeLastUpdatedTextView.setText(String.valueOf(mLastUpdatedTime));
-        }
-        else
-        {
-            Log.d(TAG, "my location is null");
-        }
-
-//        mLastUpdateTimeTextView.setText(mLastUpdateTime);
-    }
-
-    private void updateLocationOnMap(Location location)
+    private void updateTable()
     {
-        if (location == null)
+        if (mCurrentLocation == null)
         {
             return;
         }
 
-        LatLng currentLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+        LinearLayout dataTable = (LinearLayout) findViewById(R.id.dataTable);
 
-        CameraPosition cameraPosition = new CameraPosition.Builder()
-                .target(currentLatLng)
-                .zoom(18)
-                .bearing(location.getBearing())
-//                .tilt(70)
-                .build();
-        CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
-        googleMap.animateCamera(cameraUpdate);
-//        googleMap.addMarker(new MarkerOptions().position(currentLatLng)
-//                .title("(" + location.getLatitude() + "," + location.getLongitude() + ")")
-//                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+        LayoutInflater layoutInflater = (LayoutInflater) getBaseContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        final View row = layoutInflater.inflate(R.layout.row, null);
 
+        TextView dateTimeTextView = (TextView) row.findViewById(R.id.dateTimeTextView);
+        dateTimeTextView.setText(mLastUpdatedTime);
+
+        TextView locationTextView = (TextView) row.findViewById(R.id.locationTextView);
+        locationTextView.setText(mCurrentLocation.getLatitude() + "," +  mCurrentLocation.getLongitude());
+
+        TextView dbmLevelTextView = (TextView) row.findViewById(R.id.dbmLevelTextView);
+        dbmLevelTextView.setText(String.valueOf(10));
+
+//        TextView deviceTextView = (TextView) row.findViewById(R.id.deviceTextView);
+//        deviceTextView.setText(deviceID);
+
+        dataTable.addView(row);
     }
 
-    private void writeToCSV() throws IOException
-    {
-        File folder = new File(Environment.getExternalStorageDirectory()
-                + "/Urban Noise");
-
-        boolean var = false;
-        if (!folder.exists())
-        {
-            var = folder.mkdir();
-        }
-
-        Log.d(TAG, "var: " + var);
-
-        final String filename = folder.toString() + "/" + (new Date().toString()) + ".csv";
-
-        new Thread()
-        {
-            public void run()
-            {
-                try
-                {
-                    FileWriter fw = new FileWriter(filename);
-                    fw.append("Device ID");
-                    fw.append(",");
-
-                    fw.append("");
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
-            }
-        }.start();
-    }
-
-    private void createNewFile()
-    {
-
-    }
 }
