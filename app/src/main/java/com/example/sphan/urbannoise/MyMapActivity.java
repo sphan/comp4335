@@ -279,7 +279,9 @@ public class MyMapActivity extends AppCompatActivity implements
 
         Log.d(TAG, "my location: " + mCurrentLocation.toString());
         updateLocationOnMap(location);
-        addRedCircleOnMap(new LatLng(location.getLatitude(), location.getLongitude()));
+        CoordConverter coord = new CoordConverter(location.getLatitude(),location.getLongitude());
+        double[] point = coord.getGridpoint();
+        addRedCircleOnMap(new LatLng(point[0], point[1]));
 //        updateUI();
     }
 

@@ -385,8 +385,10 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
         TextView dateTimeTextView = (TextView) row.findViewById(R.id.dateTimeTextView);
         dateTimeTextView.setText(dateTime);
 
+        CoordConverter coord = new CoordConverter(mCurrentLocation.getLatitude(),mCurrentLocation.getLongitude());
+        double[] gridpoint = coord.getGridpoint();
         TextView locationTextView = (TextView) row.findViewById(R.id.locationTextView);
-        locationTextView.setText(location.getLatitude() + "," + location.getLongitude());
+        locationTextView.setText(String.valueOf(gridpoint[0]).substring(0,8) + "," +  String.valueOf(gridpoint[1]).substring(0,8));
 
         TextView dbmLevelTextView = (TextView) row.findViewById(R.id.dbmLevelTextView);
         dbmLevelTextView.setText(String.valueOf(10));
