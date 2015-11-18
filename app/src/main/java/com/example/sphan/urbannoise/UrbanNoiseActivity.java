@@ -23,8 +23,12 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
+import java.lang.reflect.Array;
 import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.LinkedList;
 
 public class UrbanNoiseActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks,
@@ -38,6 +42,7 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
     protected final static String REQUESTING_LOCATION_UPDATES_KEY = "requesting-location-updates-key";
     protected final static String LOCATION_KEY = "location-key";
     protected final static String LAST_UPDATED_TIME_STRING_KEY = "last-updated-time-string-key";
+    protected final static String IS_PAUSED_KEY = "is-paused-key";
 
     private GoogleApiClient mGoogleApiClient;
     //    private Location mLastLocation;
@@ -49,6 +54,10 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
     private Button startButton;
     private Button endButton;
     private Button viewOnMapButton;
+
+    private ArrayList<Location> locations;
+    private ArrayList<String> datetimes;
+
 
     private boolean mRequestingLocationUpdates;
     private boolean gpsEnabled;
@@ -121,14 +130,18 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
         mCurrentLocation = location;
         mLastUpdatedTime = DateFormat.getDateTimeInstance().format(new Date());
 
+        locations.add(mCurrentLocation);
+        datetimes.add(mLastUpdatedTime);
+
         Log.d(TAG, "my location: " + mCurrentLocation.toString());
-        updateTable();
+        updateTable(mCurrentLocation, mLastUpdatedTime);
     }
 
     public void onSaveInstanceState(Bundle savedInstanceState) {
         savedInstanceState.putBoolean(REQUESTING_LOCATION_UPDATES_KEY, mRequestingLocationUpdates);
-        savedInstanceState.putParcelable(LOCATION_KEY, mCurrentLocation);
-        savedInstanceState.putString(LAST_UPDATED_TIME_STRING_KEY, mLastUpdatedTime);
+        savedInstanceState.putParcelableArrayList(LOCATION_KEY, locations);
+        savedInstanceState.putStringArrayList(LAST_UPDATED_TIME_STRING_KEY, datetimes);
+        savedInstanceState.putBoolean(IS_PAUSED_KEY, isPaused);
         super.onSaveInstanceState(savedInstanceState);
     }
 
@@ -147,6 +160,7 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
     public void viewInMap(View view)
     {
         Intent intent = new Intent(this, MyMapActivity.class);
+        intent.putExtra("locations", locations);
         startActivity(intent);
     }
 
@@ -194,6 +208,19 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
         networkEnabled = false;
         isPaused = true;
 
+        locations = (ArrayList<Location>) getIntent().getSerializableExtra("locations");
+        datetimes = (ArrayList<String>) getIntent().getSerializableExtra("datetimes");
+
+        if (locations == null)
+        {
+            locations = new ArrayList<>();
+        }
+
+        if (datetimes == null)
+        {
+            datetimes = new ArrayList<>();
+        }
+
 //        mGoogleApiClient.connect();
 
         Bundle extras = getIntent().getExtras();
@@ -201,6 +228,8 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
         {
             deviceID = extras.getString("deviceID");
         }
+
+        Log.d(TAG, "I'm here");
     }
 
     @Override
@@ -208,7 +237,12 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
     {
         super.onResume();
 
-//        startGetLocation();
+        if (isPaused != true)
+        {
+            startGetLocation();
+        }
+
+//
     }
 
     protected synchronized void buildGoogleApiClient() {
@@ -285,19 +319,29 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
             if (savedInstanceState.keySet().contains(LOCATION_KEY)) {
                 // Since LOCATION_KEY was found in the Bundle, we can be sure that mCurrentLocation
                 // is not null.
-                mCurrentLocation = savedInstanceState.getParcelable(LOCATION_KEY);
+                locations = savedInstanceState.getParcelableArrayList(LOCATION_KEY);
             }
 
             // Update the value of mLastUpdateTime from the Bundle and update the UI.
             if (savedInstanceState.keySet().contains(LAST_UPDATED_TIME_STRING_KEY)) {
-                mLastUpdatedTime = savedInstanceState.getString(LAST_UPDATED_TIME_STRING_KEY);
+                datetimes = savedInstanceState.getStringArrayList(LAST_UPDATED_TIME_STRING_KEY);
+            }
+
+            if (savedInstanceState.keySet().contains(IS_PAUSED_KEY))
+            {
+                isPaused = savedInstanceState.getBoolean(IS_PAUSED_KEY);
             }
 
             if (savedInstanceState.keySet().contains("deviceID"))
             {
                 deviceID = savedInstanceState.getString("deviceID");
                 Log.d(TAG, "deviceID: " + deviceID);
-                updateTable();
+            }
+
+            for (int i = 0; i < locations.size(); ++i)
+            {
+                updateTable(locations.get(i), datetimes.get(i));
+                Log.d(TAG, "updating table for item #" + i);
             }
         }
     }
@@ -326,7 +370,7 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
         dialog.show();
     }
 
-    private void updateTable()
+    private void updateTable(Location location, String dateTime)
     {
         if (mCurrentLocation == null)
         {
@@ -339,10 +383,10 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
         final View row = layoutInflater.inflate(R.layout.row, null);
 
         TextView dateTimeTextView = (TextView) row.findViewById(R.id.dateTimeTextView);
-        dateTimeTextView.setText(mLastUpdatedTime);
+        dateTimeTextView.setText(dateTime);
 
         TextView locationTextView = (TextView) row.findViewById(R.id.locationTextView);
-        locationTextView.setText(mCurrentLocation.getLatitude() + "," + mCurrentLocation.getLongitude());
+        locationTextView.setText(location.getLatitude() + "," + location.getLongitude());
 
         TextView dbmLevelTextView = (TextView) row.findViewById(R.id.dbmLevelTextView);
         dbmLevelTextView.setText(String.valueOf(10));
