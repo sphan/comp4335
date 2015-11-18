@@ -38,4 +38,11 @@
         android:id="@+id/goToMapButton"
         android:onClick="goToMap" />
 
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/start_urban_noise_detection_button"
+        android:id="@+id/startUrbanNoiseDetectionButton"
+        android:onClick="startUrbanNoiseDetection" />
+
 </LinearLayout>

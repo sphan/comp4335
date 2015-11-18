@@ -38,6 +38,13 @@
             android:theme="@style/AppTheme.NoActionBar" >
         </activity>
 
+        <!-- <meta-data -->
+        <!-- android:name="com.google.android.gms.version" -->
+        <!-- android:value="@integer/google_play_services_version" /> -->
+        <!-- <meta-data -->
+        <!-- android:name="com.google.android.geo.API_KEY" -->
+        <!-- android:value="@string/google_api_key" /> -->
+
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
@@ -53,6 +60,11 @@
         <activity
             android:name=".MyMapActivity"
             android:label="@string/title_activity_my_map"
+            android:theme="@style/AppTheme.NoActionBar" >
+        </activity>
+        <activity
+            android:name=".UrbanNoiseActivity"
+            android:label="@string/title_activity_urban_noise"
             android:theme="@style/AppTheme.NoActionBar" >
         </activity>
     </application>

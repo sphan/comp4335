@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.Settings;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -34,6 +35,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.util.Date;
@@ -45,7 +48,7 @@ public class MyMapActivity extends AppCompatActivity implements
 //    private static final LatLng home = new LatLng(-33.8579953, 150.9935675);
     private GoogleMap googleMap;
 
-    private static final String TAG = MyLocationActivity.class.getSimpleName();
+    private static final String TAG = MyMapActivity.class.getSimpleName();
     private static final long LOCATION_UPDATE_INTERVAL = 5 * 1000; // 5 milliseconds
 
     private static final float CIRCLE_RADIUS = 1;
@@ -59,6 +62,7 @@ public class MyMapActivity extends AppCompatActivity implements
     private GoogleApiClient mGoogleApiClient;
 //    private Location mLastLocation;
     private String mLastUpdatedTime;
+    private String deviceID;
     private Location mCurrentLocation;
     private LocationRequest mLocationRequest;
     private LocationManager locationManager;
@@ -78,14 +82,14 @@ public class MyMapActivity extends AppCompatActivity implements
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+//        fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+//            }
+//        });
 
         try
         {
@@ -113,6 +117,12 @@ public class MyMapActivity extends AppCompatActivity implements
         networkEnabled = false;
 
         mGoogleApiClient.connect();
+
+        Bundle extras = getIntent().getExtras();
+        if (extras != null)
+        {
+            deviceID = extras.getString("deviceID");
+        }
 
 //        Location australia = new Location(Settings.Secure.LOCATION_MODE);
 //        australia.setLatitude(AUSTRALIA.latitude);
@@ -320,6 +330,12 @@ public class MyMapActivity extends AppCompatActivity implements
             if (savedInstanceState.keySet().contains(LAST_UPDATED_TIME_STRING_KEY)) {
                 mLastUpdatedTime = savedInstanceState.getString(LAST_UPDATED_TIME_STRING_KEY);
             }
+
+            if (savedInstanceState.keySet().contains("deviceID"))
+            {
+                deviceID = savedInstanceState.getString("deviceID");
+                Log.d(TAG, "deviceID: " + deviceID);
+            }
             updateUI();
         }
     }
@@ -365,6 +381,11 @@ public class MyMapActivity extends AppCompatActivity implements
 
     private void updateLocationOnMap(Location location)
     {
+        if (location == null)
+        {
+            return;
+        }
+
         LatLng currentLatLng = new LatLng(location.getLatitude(), location.getLongitude());
 
         CameraPosition cameraPosition = new CameraPosition.Builder()
@@ -381,4 +402,43 @@ public class MyMapActivity extends AppCompatActivity implements
 
     }
 
+    private void writeToCSV() throws IOException
+    {
+        File folder = new File(Environment.getExternalStorageDirectory()
+                + "/Urban Noise");
+
+        boolean var = false;
+        if (!folder.exists())
+        {
+            var = folder.mkdir();
+        }
+
+        Log.d(TAG, "var: " + var);
+
+        final String filename = folder.toString() + "/" + (new Date().toString()) + ".csv";
+
+        new Thread()
+        {
+            public void run()
+            {
+                try
+                {
+                    FileWriter fw = new FileWriter(filename);
+                    fw.append("Device ID");
+                    fw.append(",");
+
+                    fw.append("");
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
+    }
+
+    private void createNewFile()
+    {
+
+    }
 }

@@ -1,21 +1,27 @@
 package com.example.sphan.urbannoise;
 
+import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,33 +29,42 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.CircleOptions;
+import com.google.android.gms.maps.model.LatLng;
 
 import org.w3c.dom.Text;
 
 import java.text.DateFormat;
 import java.util.Date;
 
-public class MyLocationActivity extends AppCompatActivity implements
+public class UrbanNoiseActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
+        GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener{
 
-    private static final String TAG = MyLocationActivity.class.getSimpleName();
+    private static final String TAG = UrbanNoiseActivity.class.getSimpleName();
     private static final long LOCATION_UPDATE_INTERVAL = 5 * 1000; // 5 milliseconds
+
+//    private static final LatLng AUSTRALIA = new LatLng(35.3080, 149.1245);
 
     protected final static String REQUESTING_LOCATION_UPDATES_KEY = "requesting-location-updates-key";
     protected final static String LOCATION_KEY = "location-key";
     protected final static String LAST_UPDATED_TIME_STRING_KEY = "last-updated-time-string-key";
 
     private GoogleApiClient mGoogleApiClient;
-    private Location mLastLocation;
+    //    private Location mLastLocation;
     private String mLastUpdatedTime;
+    private String deviceID;
     private Location mCurrentLocation;
     private LocationRequest mLocationRequest;
     private LocationManager locationManager;
-
-    private TextView latitudeTextView;
-    private TextView longitudeTextView;
-    private TextView timeLastUpdatedTextView;
+    private Button startButton;
+    private Button endButton;
+    private Button viewOnMapButton;
 
     private boolean mRequestingLocationUpdates;
     private boolean gpsEnabled;
@@ -58,7 +73,7 @@ public class MyLocationActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_my_location);
+        setContentView(R.layout.activity_urban_noise);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -75,15 +90,21 @@ public class MyLocationActivity extends AppCompatActivity implements
 
         buildGoogleApiClient();
 
-        latitudeTextView = (TextView) findViewById(R.id.latitudeTextview);
-        longitudeTextView = (TextView) findViewById(R.id.longitudeTextview);
-        timeLastUpdatedTextView = (TextView) findViewById(R.id.lastUpdatedTextView);
+        startButton = (Button) findViewById(R.id.start_button);
+        endButton = (Button) findViewById(R.id.end_button);
+        viewOnMapButton = (Button) findViewById(R.id.viewInMapButton);
+
         mRequestingLocationUpdates = true;
         gpsEnabled = false;
         networkEnabled = false;
 
         mGoogleApiClient.connect();
 
+        Bundle extras = getIntent().getExtras();
+        if (extras != null)
+        {
+            deviceID = extras.getString("deviceID");
+        }
     }
 
     @Override
@@ -117,6 +138,8 @@ public class MyLocationActivity extends AppCompatActivity implements
         // (http://developer.android.com/reference/com/google/android/gms/location/LocationListener.html).
         LocationServices.FusedLocationApi.requestLocationUpdates(
                 mGoogleApiClient, mLocationRequest, this);
+
+        mLastUpdatedTime = DateFormat.getDateTimeInstance().format(new Date());
     }
 
     @Override
@@ -146,12 +169,12 @@ public class MyLocationActivity extends AppCompatActivity implements
         {
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
             mLastUpdatedTime = DateFormat.getDateTimeInstance().format(new Date());
-            updateUI();
         }
 
         if (mRequestingLocationUpdates)
         {
             startLocationUpdates();
+            updateTable();
         }
     }
 
@@ -216,7 +239,7 @@ public class MyLocationActivity extends AppCompatActivity implements
         mLastUpdatedTime = DateFormat.getDateTimeInstance().format(new Date());
 
         Log.d(TAG, "my location: " + mCurrentLocation.toString());
-        updateUI();
+        updateTable();
     }
 
     public void onSaveInstanceState(Bundle savedInstanceState) {
@@ -275,7 +298,12 @@ public class MyLocationActivity extends AppCompatActivity implements
                 mLastUpdatedTime = savedInstanceState.getString(LAST_UPDATED_TIME_STRING_KEY);
             }
 
-            updateUI();
+            if (savedInstanceState.keySet().contains("deviceID"))
+            {
+                deviceID = savedInstanceState.getString("deviceID");
+                Log.d(TAG, "deviceID: " + deviceID);
+                updateTable();
+            }
         }
     }
 
@@ -303,19 +331,31 @@ public class MyLocationActivity extends AppCompatActivity implements
         dialog.show();
     }
 
-    private void updateUI() {
-        if (mCurrentLocation != null)
+    private void updateTable()
+    {
+        if (mCurrentLocation == null)
         {
-            latitudeTextView.setText(String.valueOf(mCurrentLocation.getLatitude()));
-            longitudeTextView.setText(String.valueOf(mCurrentLocation.getLongitude()));
-            timeLastUpdatedTextView.setText(String.valueOf(mLastUpdatedTime));
-        }
-        else
-        {
-            Log.d(TAG, "my location is null");
+            return;
         }
 
-//        mLastUpdateTimeTextView.setText(mLastUpdateTime);
+        LinearLayout dataTable = (LinearLayout) findViewById(R.id.dataTable);
+
+        LayoutInflater layoutInflater = (LayoutInflater) getBaseContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        final View row = layoutInflater.inflate(R.layout.row, null);
+
+        TextView dateTimeTextView = (TextView) row.findViewById(R.id.dateTimeTextView);
+        dateTimeTextView.setText(mLastUpdatedTime);
+
+        TextView locationTextView = (TextView) row.findViewById(R.id.locationTextView);
+        locationTextView.setText(mCurrentLocation.getLatitude() + "," +  mCurrentLocation.getLongitude());
+
+        TextView dbmLevelTextView = (TextView) row.findViewById(R.id.dbmLevelTextView);
+        dbmLevelTextView.setText(String.valueOf(10));
+
+//        TextView deviceTextView = (TextView) row.findViewById(R.id.deviceTextView);
+//        deviceTextView.setText(deviceID);
+
+        dataTable.addView(row);
     }
 
 }
