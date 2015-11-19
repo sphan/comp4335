@@ -1,8 +1,6 @@
 package com.example.sphan.urbannoise;
 
 import java.lang.Math;
-
-import android.location.Location;
 import android.util.Log;
 
 /**
