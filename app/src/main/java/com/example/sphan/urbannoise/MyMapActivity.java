@@ -38,8 +38,11 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 
 public class MyMapActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks,
@@ -59,6 +62,7 @@ public class MyMapActivity extends AppCompatActivity implements
     protected final static String LOCATION_KEY = "location-key";
     protected final static String LAST_UPDATED_TIME_STRING_KEY = "last-updated-time-string-key";
 
+
     private GoogleApiClient mGoogleApiClient;
 //    private Location mLastLocation;
     private String mLastUpdatedTime;
@@ -74,6 +78,9 @@ public class MyMapActivity extends AppCompatActivity implements
     private boolean mRequestingLocationUpdates;
     private boolean gpsEnabled;
     private boolean networkEnabled;
+
+    private ArrayList<Location> locations;
+    private ArrayList<String> dateTimes;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -122,6 +129,16 @@ public class MyMapActivity extends AppCompatActivity implements
         if (extras != null)
         {
             deviceID = extras.getString("deviceID");
+        }
+
+        locations = (ArrayList<Location>) getIntent().getSerializableExtra("locations");
+
+        if (locations != null)
+        {
+            for (Location l : locations)
+            {
+                updateLocationOnMap(l);
+            }
         }
 
 //        Location australia = new Location(Settings.Secure.LOCATION_MODE);
@@ -325,12 +342,12 @@ public class MyMapActivity extends AppCompatActivity implements
             if (savedInstanceState.keySet().contains(LOCATION_KEY)) {
                 // Since LOCATION_KEY was found in the Bundle, we can be sure that mCurrentLocation
                 // is not null.
-                mCurrentLocation = savedInstanceState.getParcelable(LOCATION_KEY);
+                locations = savedInstanceState.getParcelableArrayList(LOCATION_KEY);
             }
 
             // Update the value of mLastUpdateTime from the Bundle and update the UI.
             if (savedInstanceState.keySet().contains(LAST_UPDATED_TIME_STRING_KEY)) {
-                mLastUpdatedTime = savedInstanceState.getString(LAST_UPDATED_TIME_STRING_KEY);
+                dateTimes = savedInstanceState.getStringArrayList(LAST_UPDATED_TIME_STRING_KEY);
             }
 
             if (savedInstanceState.keySet().contains("deviceID"))
@@ -338,7 +355,11 @@ public class MyMapActivity extends AppCompatActivity implements
                 deviceID = savedInstanceState.getString("deviceID");
                 Log.d(TAG, "deviceID: " + deviceID);
             }
-            updateUI();
+
+            for (int i = 0; i < locations.size(); ++i)
+            {
+                updateLocationOnMap(locations.get(i));
+            }
         }
     }
 

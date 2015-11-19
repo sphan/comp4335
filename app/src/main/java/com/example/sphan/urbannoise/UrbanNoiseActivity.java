@@ -1,27 +1,20 @@
 package com.example.sphan.urbannoise;
 
-import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.TableLayout;
-import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,18 +22,13 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdate;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.model.CameraPosition;
-import com.google.android.gms.maps.model.CircleOptions;
-import com.google.android.gms.maps.model.LatLng;
 
-import org.w3c.dom.Text;
-
+import java.lang.reflect.Array;
 import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.LinkedList;
 
 public class UrbanNoiseActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks,
@@ -54,6 +42,7 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
     protected final static String REQUESTING_LOCATION_UPDATES_KEY = "requesting-location-updates-key";
     protected final static String LOCATION_KEY = "location-key";
     protected final static String LAST_UPDATED_TIME_STRING_KEY = "last-updated-time-string-key";
+    protected final static String IS_PAUSED_KEY = "is-paused-key";
 
     private GoogleApiClient mGoogleApiClient;
     //    private Location mLastLocation;
@@ -66,9 +55,129 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
     private Button endButton;
     private Button viewOnMapButton;
 
+    private ArrayList<Location> locations;
+    private ArrayList<String> datetimes;
+
+
     private boolean mRequestingLocationUpdates;
     private boolean gpsEnabled;
     private boolean networkEnabled;
+    private boolean isPaused;
+
+
+    @Override
+    public void onConnected(Bundle bundle) {
+
+        Log.i(TAG, "Location service connected");
+        mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+//        Toast.makeText(this, "GoogleApiClient connected", Toast.LENGTH_LONG).show();
+
+        if (mCurrentLocation == null)
+        {
+            Log.i(TAG, "mCurrentLocation is null");
+        }
+
+        if (mGoogleApiClient.isConnected() == false)
+        {
+            Log.i(TAG, "mGoogleApiClient is not connected");
+        }
+
+        if (mLocationRequest == null)
+        {
+            Log.i(TAG, "mLocationRequest is null");
+        }
+
+        if (mCurrentLocation == null &&
+                (mGoogleApiClient.isConnected() && mLocationRequest != null))
+        {
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+            mLastUpdatedTime = DateFormat.getDateTimeInstance().format(new Date());
+        }
+
+        if (mRequestingLocationUpdates)
+        {
+            startLocationUpdates();
+//            updateTable();
+        }
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.i(TAG, "Location services suspended. Please reconnect.");
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        Toast.makeText(this, "Connection Failure : " + connectionResult.toString(), Toast.LENGTH_LONG).show();
+//        Toast.makeText(this, "Connection Failure : " + connectionResult.getErrorMessage(), Toast.LENGTH_SHORT).show();
+
+//        if (connectionResult.hasResolution()) {
+//            try {
+//                // Start an Activity that tries to resolve the error
+//                connectionResult.startResolutionForResult(this, CONNECTION_FAILURE_RESOLUTION_REQUEST);
+//            } catch (IntentSender.SendIntentException e) {
+//                e.printStackTrace();
+//            }
+//        } else {
+//            Log.i(TAG, "Location services connection failed with code " + connectionResult.getErrorCode());
+//        }
+    }
+
+
+
+    @Override
+    public void onLocationChanged(Location location) {
+        mCurrentLocation = location;
+        mLastUpdatedTime = DateFormat.getDateTimeInstance().format(new Date());
+
+        locations.add(mCurrentLocation);
+        datetimes.add(mLastUpdatedTime);
+
+        Log.d(TAG, "my location: " + mCurrentLocation.toString());
+        updateTable(mCurrentLocation, mLastUpdatedTime);
+    }
+
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        savedInstanceState.putBoolean(REQUESTING_LOCATION_UPDATES_KEY, mRequestingLocationUpdates);
+        savedInstanceState.putParcelableArrayList(LOCATION_KEY, locations);
+        savedInstanceState.putStringArrayList(LAST_UPDATED_TIME_STRING_KEY, datetimes);
+        savedInstanceState.putBoolean(IS_PAUSED_KEY, isPaused);
+        super.onSaveInstanceState(savedInstanceState);
+    }
+
+    public void startUrbanNoiseDetection(View view)
+    {
+        isPaused = false;
+        startGetLocation();
+    }
+
+    public void stopUrbanNoiseDetection(View view)
+    {
+        isPaused = true;
+        stopGetLocation();
+    }
+
+    public void viewInMap(View view)
+    {
+        Intent intent = new Intent(this, MyMapActivity.class);
+        intent.putExtra("locations", locations);
+        startActivity(intent);
+    }
+
+//    @Override
+//    public void onStatusChanged(String provider, int status, Bundle extras) {
+//
+//    }
+//
+//    @Override
+//    public void onProviderEnabled(String provider) {
+//
+//    }
+//
+//    @Override
+//    public void onProviderDisabled(String provider) {
+//
+//    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,14 +206,30 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
         mRequestingLocationUpdates = true;
         gpsEnabled = false;
         networkEnabled = false;
+        isPaused = true;
 
-        mGoogleApiClient.connect();
+        locations = (ArrayList<Location>) getIntent().getSerializableExtra("locations");
+        datetimes = (ArrayList<String>) getIntent().getSerializableExtra("datetimes");
+
+        if (locations == null)
+        {
+            locations = new ArrayList<>();
+        }
+
+        if (datetimes == null)
+        {
+            datetimes = new ArrayList<>();
+        }
+
+//        mGoogleApiClient.connect();
 
         Bundle extras = getIntent().getExtras();
         if (extras != null)
         {
             deviceID = extras.getString("deviceID");
         }
+
+        Log.d(TAG, "I'm here");
     }
 
     @Override
@@ -112,15 +237,12 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
     {
         super.onResume();
 
-        if (mGoogleApiClient.isConnected() == false)
+        if (isPaused != true)
         {
-            mGoogleApiClient.connect();
+            startGetLocation();
         }
 
-        if (mGoogleApiClient.isConnected() && mRequestingLocationUpdates)
-        {
-            startLocationUpdates();
-        }
+//
     }
 
     protected synchronized void buildGoogleApiClient() {
@@ -140,64 +262,6 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
                 mGoogleApiClient, mLocationRequest, this);
 
         mLastUpdatedTime = DateFormat.getDateTimeInstance().format(new Date());
-    }
-
-    @Override
-    public void onConnected(Bundle bundle) {
-
-        Log.i(TAG, "Location service connected");
-        mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        Toast.makeText(this, "GoogleApiClient connected", Toast.LENGTH_LONG).show();
-
-        if (mCurrentLocation == null)
-        {
-            Log.i(TAG, "mCurrentLocation is null");
-        }
-
-        if (mGoogleApiClient.isConnected() == false)
-        {
-            Log.i(TAG, "mGoogleApiClient is not connected");
-        }
-
-        if (mLocationRequest == null)
-        {
-            Log.i(TAG, "mLocationRequest is null");
-        }
-
-        if (mCurrentLocation == null &&
-                (mGoogleApiClient.isConnected() && mLocationRequest != null))
-        {
-            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
-            mLastUpdatedTime = DateFormat.getDateTimeInstance().format(new Date());
-        }
-
-        if (mRequestingLocationUpdates)
-        {
-            startLocationUpdates();
-            updateTable();
-        }
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-        Log.i(TAG, "Location services suspended. Please reconnect.");
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-        Toast.makeText(this, "Connection Failure : " + connectionResult.toString(), Toast.LENGTH_LONG).show();
-//        Toast.makeText(this, "Connection Failure : " + connectionResult.getErrorMessage(), Toast.LENGTH_SHORT).show();
-
-//        if (connectionResult.hasResolution()) {
-//            try {
-//                // Start an Activity that tries to resolve the error
-//                connectionResult.startResolutionForResult(this, CONNECTION_FAILURE_RESOLUTION_REQUEST);
-//            } catch (IntentSender.SendIntentException e) {
-//                e.printStackTrace();
-//            }
-//        } else {
-//            Log.i(TAG, "Location services connection failed with code " + connectionResult.getErrorCode());
-//        }
     }
 
     protected void createLocationRequest() {
@@ -234,45 +298,10 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onLocationChanged(Location location) {
-        mCurrentLocation = location;
-        mLastUpdatedTime = DateFormat.getDateTimeInstance().format(new Date());
-
-        Log.d(TAG, "my location: " + mCurrentLocation.toString());
-        updateTable();
-    }
-
-    public void onSaveInstanceState(Bundle savedInstanceState) {
-        savedInstanceState.putBoolean(REQUESTING_LOCATION_UPDATES_KEY, mRequestingLocationUpdates);
-        savedInstanceState.putParcelable(LOCATION_KEY, mCurrentLocation);
-        savedInstanceState.putString(LAST_UPDATED_TIME_STRING_KEY, mLastUpdatedTime);
-        super.onSaveInstanceState(savedInstanceState);
-    }
-
-//    @Override
-//    public void onStatusChanged(String provider, int status, Bundle extras) {
-//
-//    }
-//
-//    @Override
-//    public void onProviderEnabled(String provider) {
-//
-//    }
-//
-//    @Override
-//    public void onProviderDisabled(String provider) {
-//
-//    }
-
-    @Override
     protected void onPause() {
         super.onPause();
 
-        if (mGoogleApiClient.isConnected() == true)
-        {
-            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
-            mGoogleApiClient.disconnect();
-        }
+        stopGetLocation();
     }
 
     private void updateValuesFromBundle(Bundle savedInstanceState) {
@@ -290,19 +319,29 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
             if (savedInstanceState.keySet().contains(LOCATION_KEY)) {
                 // Since LOCATION_KEY was found in the Bundle, we can be sure that mCurrentLocation
                 // is not null.
-                mCurrentLocation = savedInstanceState.getParcelable(LOCATION_KEY);
+                locations = savedInstanceState.getParcelableArrayList(LOCATION_KEY);
             }
 
             // Update the value of mLastUpdateTime from the Bundle and update the UI.
             if (savedInstanceState.keySet().contains(LAST_UPDATED_TIME_STRING_KEY)) {
-                mLastUpdatedTime = savedInstanceState.getString(LAST_UPDATED_TIME_STRING_KEY);
+                datetimes = savedInstanceState.getStringArrayList(LAST_UPDATED_TIME_STRING_KEY);
+            }
+
+            if (savedInstanceState.keySet().contains(IS_PAUSED_KEY))
+            {
+                isPaused = savedInstanceState.getBoolean(IS_PAUSED_KEY);
             }
 
             if (savedInstanceState.keySet().contains("deviceID"))
             {
                 deviceID = savedInstanceState.getString("deviceID");
                 Log.d(TAG, "deviceID: " + deviceID);
-                updateTable();
+            }
+
+            for (int i = 0; i < locations.size(); ++i)
+            {
+                updateTable(locations.get(i), datetimes.get(i));
+                Log.d(TAG, "updating table for item #" + i);
             }
         }
     }
@@ -331,7 +370,7 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
         dialog.show();
     }
 
-    private void updateTable()
+    private void updateTable(Location location, String dateTime)
     {
         if (mCurrentLocation == null)
         {
@@ -344,7 +383,7 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
         final View row = layoutInflater.inflate(R.layout.row, null);
 
         TextView dateTimeTextView = (TextView) row.findViewById(R.id.dateTimeTextView);
-        dateTimeTextView.setText(mLastUpdatedTime);
+        dateTimeTextView.setText(dateTime);
 
         CoordConverter coord = new CoordConverter(mCurrentLocation.getLatitude(),mCurrentLocation.getLongitude());
         double[] gridpoint = coord.getGridpoint();
@@ -358,6 +397,38 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
 //        deviceTextView.setText(deviceID);
 
         dataTable.addView(row);
+    }
+
+    private void startGetLocation()
+    {
+        if (mGoogleApiClient == null)
+        {
+            return;
+        }
+
+        if (mGoogleApiClient.isConnected() == false)
+        {
+            mGoogleApiClient.connect();
+        }
+
+        if (mGoogleApiClient.isConnected() && mRequestingLocationUpdates)
+        {
+            startLocationUpdates();
+        }
+    }
+
+    private void stopGetLocation()
+    {
+        if (mGoogleApiClient == null)
+        {
+            return;
+        }
+
+        if (mGoogleApiClient.isConnected() == true)
+        {
+            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+            mGoogleApiClient.disconnect();
+        }
     }
 
 }

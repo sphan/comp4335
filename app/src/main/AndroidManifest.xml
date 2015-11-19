@@ -25,6 +25,7 @@
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -35,6 +36,7 @@
         <activity
             android:name=".MyLocationActivity"
             android:label="@string/title_activity_my_location"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" >
         </activity>
 
@@ -55,16 +57,19 @@
         <activity
             android:name=".SoundRecordingActivity"
             android:label="@string/title_activity_sound_recording"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" >
         </activity>
         <activity
             android:name=".MyMapActivity"
             android:label="@string/title_activity_my_map"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" >
         </activity>
         <activity
             android:name=".UrbanNoiseActivity"
             android:label="@string/title_activity_urban_noise"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" >
         </activity>
     </application>

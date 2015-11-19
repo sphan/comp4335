@@ -28,7 +28,7 @@ public class SoundRecorder {
     private final static String TAG = SoundRecorder.class.getSimpleName();
 
     private static final int RECORDER_SAMPLE_RATE = 8000;
-    private static final int RECORDER_CHANNELS = AudioFormat.CHANNEL_IN_STEREO;
+    private static final int RECORDER_CHANNELS = AudioFormat.CHANNEL_IN_MONO;
     private static final int RECORDER_AUDIO_ENCODING = AudioFormat.ENCODING_PCM_16BIT;
     private AudioRecord recorder = null;
     private Thread recordingThread = null;
@@ -39,6 +39,7 @@ public class SoundRecorder {
 
     private MediaRecorder myAudioRecorder;
     private String outputFile;
+    private int bufferSize;
 
     public static SoundRecorder getInstance() {
         return ourInstance;
@@ -122,28 +123,38 @@ public class SoundRecorder {
         File file = new File(outputFile);
         int shortSizeInBytes = Short.SIZE/Byte.SIZE;
         int bufferSizeInBytes = (int) (file.length()/shortSizeInBytes);
-        short[] audioData = new short[bufferSizeInBytes];
+        byte[] audioData = new byte[bufferSizeInBytes];
 
         try
         {
+            AudioTrack audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, RECORDER_SAMPLE_RATE,
+                    AudioFormat.CHANNEL_OUT_MONO, RECORDER_AUDIO_ENCODING, bufferSize, AudioTrack.MODE_STREAM);
+            audioTrack.play();
             InputStream inputStream = new FileInputStream(file);
-            BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
-            DataInputStream dataInputStream = new DataInputStream(bufferedInputStream);
 
             int i = 0;
-            while (dataInputStream.available() > 0)
+            while ((i = inputStream.read(audioData)) != -1)
             {
-                audioData[i] = dataInputStream.readShort();
-                i++;
+                audioTrack.write(audioData, 0, i);
             }
 
-            dataInputStream.close();
+//            InputStream inputStream = new FileInputStream(file);
+//            BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+//            DataInputStream dataInputStream = new DataInputStream(bufferedInputStream);
+//
+//            int i = 0;
+//            while (dataInputStream.available() > 0)
+//            {
+//                audioData[i] = dataInputStream.readShort();
+//                i++;
+//            }
+//
+//            dataInputStream.close();
+//
+//
 
-            AudioTrack audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, RECORDER_SAMPLE_RATE,
-                    AudioFormat.CHANNEL_OUT_STEREO, RECORDER_AUDIO_ENCODING, bufferSizeInBytes, AudioTrack.MODE_STREAM);
 
-            audioTrack.play();
-            audioTrack.write(audioData, 0, bufferSizeInBytes);
+//            audioTrack.write(audioData, 0, bufferSizeInBytes);
         }
         catch (FileNotFoundException e)
         {
@@ -156,9 +167,9 @@ public class SoundRecorder {
     }
 
     private SoundRecorder() {
-        outputFile = Environment.getExternalStorageDirectory().getAbsolutePath() + "/recording.3gp";
-//        outputFile = Environment.getExternalStorageDirectory().getAbsolutePath() + "/voice8K16bitmono.pcm";
-        int bufferSize = AudioRecord.getMinBufferSize(RECORDER_SAMPLE_RATE, RECORDER_CHANNELS, RECORDER_AUDIO_ENCODING);
+//        outputFile = Environment.getExternalStorageDirectory().getAbsolutePath() + "/recording.3gp";
+        outputFile = Environment.getExternalStorageDirectory().getAbsolutePath() + "/voice8K16bitmono.pcm";
+        bufferSize = AudioRecord.getMinBufferSize(RECORDER_SAMPLE_RATE, RECORDER_CHANNELS, RECORDER_AUDIO_ENCODING);
 
         createMediaRecorder();
     }
@@ -177,8 +188,8 @@ public class SoundRecorder {
     private void writeAudioDataToFile()
     {
 //        String filePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/voice8K16bitmono.pcm";
-//        short sData[] = new short[BufferElement2Rec];
-        byte bData[] = new byte[BufferElement2Rec * 2];
+        short sData[] = new short[BufferElement2Rec];
+//        byte bData[] = new byte[BufferElement2Rec * 2];
 
         FileOutputStream os = null;
         try
@@ -192,11 +203,11 @@ public class SoundRecorder {
 
         while (isRecording == true)
         {
-            recorder.read(bData, 0, BufferElement2Rec);
-            Log.d(TAG, "byte writing to file " + bData.toString());
+            recorder.read(sData, 0, BufferElement2Rec);
+            Log.d(TAG, "byte writing to file " + sData.toString());
             try
             {
-//                byte bData[] = short2byte(sData);
+                byte bData[] = short2byte(sData);
                 os.write(bData, 0, BufferElement2Rec * BytesPerElement);
             }
             catch (IOException e)
