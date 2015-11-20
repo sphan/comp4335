@@ -35,14 +35,8 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener{
 
     private static final String TAG = UrbanNoiseActivity.class.getSimpleName();
-    private static final long LOCATION_UPDATE_INTERVAL = 5 * 1000; // 5 milliseconds
 
 //    private static final LatLng AUSTRALIA = new LatLng(35.3080, 149.1245);
-
-    protected final static String REQUESTING_LOCATION_UPDATES_KEY = "requesting-location-updates-key";
-    protected final static String LOCATION_KEY = "location-key";
-    protected final static String LAST_UPDATED_TIME_STRING_KEY = "last-updated-time-string-key";
-    protected final static String IS_PAUSED_KEY = "is-paused-key";
 
     private GoogleApiClient mGoogleApiClient;
     //    private Location mLastLocation;
@@ -138,10 +132,10 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
     }
 
     public void onSaveInstanceState(Bundle savedInstanceState) {
-        savedInstanceState.putBoolean(REQUESTING_LOCATION_UPDATES_KEY, mRequestingLocationUpdates);
-        savedInstanceState.putParcelableArrayList(LOCATION_KEY, locations);
-        savedInstanceState.putStringArrayList(LAST_UPDATED_TIME_STRING_KEY, datetimes);
-        savedInstanceState.putBoolean(IS_PAUSED_KEY, isPaused);
+        savedInstanceState.putBoolean(Contants.REQUESTING_LOCATION_UPDATES_KEY, mRequestingLocationUpdates);
+        savedInstanceState.putParcelableArrayList(Contants.LOCATION_KEY, locations);
+        savedInstanceState.putStringArrayList(Contants.LAST_UPDATED_TIME_STRING_KEY, datetimes);
+        savedInstanceState.putBoolean(Contants.IS_PAUSED_KEY, isPaused);
         super.onSaveInstanceState(savedInstanceState);
     }
 
@@ -266,8 +260,8 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
 
     protected void createLocationRequest() {
         mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(LOCATION_UPDATE_INTERVAL);
-        mLocationRequest.setFastestInterval(LOCATION_UPDATE_INTERVAL);
+        mLocationRequest.setInterval(Contants.LOCATION_UPDATE_INTERVAL);
+        mLocationRequest.setFastestInterval(Contants.LOCATION_UPDATE_INTERVAL);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
 //        Log.d(TAG, "location is enabled? " + isLocationEnabled(this));
@@ -309,27 +303,27 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
         if (savedInstanceState != null) {
             // Update the value of mRequestingLocationUpdates from the Bundle, and make sure that
             // the Start Updates and Stop Updates buttons are correctly enabled or disabled.
-            if (savedInstanceState.keySet().contains(REQUESTING_LOCATION_UPDATES_KEY)) {
+            if (savedInstanceState.keySet().contains(Contants.REQUESTING_LOCATION_UPDATES_KEY)) {
                 mRequestingLocationUpdates = savedInstanceState.getBoolean(
-                        REQUESTING_LOCATION_UPDATES_KEY);
+                        Contants.REQUESTING_LOCATION_UPDATES_KEY);
             }
 
             // Update the value of mCurrentLocation from the Bundle and update the UI to show the
             // correct latitude and longitude.
-            if (savedInstanceState.keySet().contains(LOCATION_KEY)) {
+            if (savedInstanceState.keySet().contains(Contants.LOCATION_KEY)) {
                 // Since LOCATION_KEY was found in the Bundle, we can be sure that mCurrentLocation
                 // is not null.
-                locations = savedInstanceState.getParcelableArrayList(LOCATION_KEY);
+                locations = savedInstanceState.getParcelableArrayList(Contants.LOCATION_KEY);
             }
 
             // Update the value of mLastUpdateTime from the Bundle and update the UI.
-            if (savedInstanceState.keySet().contains(LAST_UPDATED_TIME_STRING_KEY)) {
-                datetimes = savedInstanceState.getStringArrayList(LAST_UPDATED_TIME_STRING_KEY);
+            if (savedInstanceState.keySet().contains(Contants.LAST_UPDATED_TIME_STRING_KEY)) {
+                datetimes = savedInstanceState.getStringArrayList(Contants.LAST_UPDATED_TIME_STRING_KEY);
             }
 
-            if (savedInstanceState.keySet().contains(IS_PAUSED_KEY))
+            if (savedInstanceState.keySet().contains(Contants.IS_PAUSED_KEY))
             {
-                isPaused = savedInstanceState.getBoolean(IS_PAUSED_KEY);
+                isPaused = savedInstanceState.getBoolean(Contants.IS_PAUSED_KEY);
             }
 
             if (savedInstanceState.keySet().contains("deviceID"))
