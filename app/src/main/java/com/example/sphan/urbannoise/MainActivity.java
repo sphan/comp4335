@@ -103,6 +103,12 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    public void fusionTableTest(View view)
+    {
+        MyFusionTable fusionTable = new MyFusionTable();
+        fusionTable.getFusionTable();
+    }
+
     private void getDeviceID()
     {
         final TelephonyManager tm = (TelephonyManager) getBaseContext().getSystemService(Context.TELEPHONY_SERVICE);

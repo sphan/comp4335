@@ -45,4 +45,11 @@
         android:id="@+id/startUrbanNoiseDetectionButton"
         android:onClick="startUrbanNoiseDetection" />
 
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/fusion_table_button"
+        android:id="@+id/fusionTable"
+        android:onClick="fusionTableTest" />
+
 </LinearLayout>

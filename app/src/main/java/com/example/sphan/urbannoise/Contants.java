@@ -23,7 +23,7 @@ public class Contants {
     public static final String API_KEY = "AIzaSyC7lS2fQyY3lo7a66cMeHJWgznoa-TFMdg";
 
     // OAUTH 2.0 Client ID
-    public static final String OAUTH_CLIENT_ID = "674752158693-hkna4t7ld9oduv2unl0nfj6h3hlost97.apps.googleusercontent.com";\
+    public static final String OAUTH_CLIENT_ID = "674752158693-hkna4t7ld9oduv2unl0nfj6h3hlost97.apps.googleusercontent.com";
     public static final String OAUTH_AUTH_URI = "https://accounts.google.com/o/oauth2/auth";
     public static final String OAUTH_TOKEN_URI = "https://accounts.google.com/o/oauth2/token";
 
@@ -34,7 +34,8 @@ public class Contants {
     public static final String SERVICE_ACC_AUTH_URI = "https://accounts.google.com/o/oauth2/auth";
     public static final String SERVICE_ACC_TOKEN_URI = "https://accounts.google.com/o/oauth2/token";
 
+    // Fusion Table
     public static final String FUSION_TABLE_READ_WRITE_SCOPE = "https://www.googleapis.com/auth/fusiontables";
-
+    public static final String FUSION_TABLE_ID = "14ALgkufsxji6YtwRCLzsLP6Xgxijlbx3BCzP0aED";
 
 }
