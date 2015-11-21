@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 public class SoundRecordingActivity extends AppCompatActivity {
 
@@ -64,12 +65,15 @@ public class SoundRecordingActivity extends AppCompatActivity {
     public void startPlaying(View view)
     {
         mySoundRecorder.playRecording();
+        startRecordingButton.setEnabled(false);
         stopPlayingButton.setEnabled(true);
         startPlayingButton.setEnabled(false);
     }
 
     public void stopPlaying(View view)
     {
-
+        startRecordingButton.setEnabled(true);
+        stopPlayingButton.setEnabled(false);
+        startPlayingButton.setEnabled(false);
     }
 }
