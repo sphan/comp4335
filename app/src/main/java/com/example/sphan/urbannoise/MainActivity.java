@@ -107,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
     {
         MyFusionTable fusionTable = new MyFusionTable();
         fusionTable.getFusionTable();
-        fusionTable.postRow(4.0,4.0,4.0,"Hello World!");
+        fusionTable.postRow(4.0,4.0,4.0,"2015-11-22");
     }
 
     private void getDeviceID()

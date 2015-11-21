@@ -5,7 +5,6 @@ import android.os.AsyncTask;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -43,7 +42,7 @@ public class MyFusionTable {
 
     public void postRow(double noise, double lon, double lat, String dateTime){
 
-        MyAsyncParams params = new MyAsyncParams(FusionControls.INSERT_ROW,noise,lon,lat,dateTime);
+        MyAsyncParams params = new MyAsyncParams(FusionControls.INSERT_ROW, noise, lon, lat, dateTime);
         new MyAsyncTask().execute(params);
 
 
@@ -64,7 +63,7 @@ public class MyFusionTable {
                     results = getFusionTable();
                     break;
                 case INSERT_ROW:
-                    results = postRow(params[0].noise,params[0].longitude,params[0].latitude,params[0].dateTime);
+                    results = postRow(params[0].noise,params[0].longitude,params[0].latitude, params[0].dateTime);
                     break;
                 default:
                     break;
@@ -76,8 +75,8 @@ public class MyFusionTable {
         private String getFusionTable()
         {
             try {
-                URL getTableURL = new URL("https://www.googleapis.com/fusiontables/v2/tables/" + Contants.FUSION_TABLE_ID +
-                        "?key=" + Contants.API_KEY);
+                URL getTableURL = new URL("https://www.googleapis.com/fusiontables/v2/tables/" + Constants.FUSION_TABLE_ID +
+                        "?key=" + Constants.API_KEY);
                 HttpsURLConnection connection = (HttpsURLConnection) getTableURL.openConnection();
 
                 print_content(connection);
@@ -116,7 +115,7 @@ public class MyFusionTable {
                 post.addRequestProperty("Authorization", "Bearer " + access);
 
 
-                String data = "sql=INSERT INTO 1avQBdG9nc7hXAG6tlT6XEA7Qsk9CAlz5kllM_Ikd(Noise, Longitude, Latitude, Date{, Noise,Longitude,Latitude,Date}) VALUES("+noise+", "+lon+", "+lat+", "+dateTime+"{, "+noise+","+lon+","+lat+","+dateTime+"})";
+                String data = "sql=INSERT INTO 1avQBdG9nc7hXAG6tlT6XEA7Qsk9CAlz5kllM_Ikd(Noise, Longitude, Latitude, Date{, Noise,Longitude,Latitude,Date}) VALUES("+noise+", "+lon+", "+lat+", "+dateTime+"{, "+noise+","+lon+","+lat+", "+dateTime+"})";
 
                 DataOutputStream wr = new DataOutputStream(
                         post.getOutputStream());
@@ -306,13 +305,13 @@ public class MyFusionTable {
             this.fusionControls = fusionControls;
             this.query = query;
         }
-        public MyAsyncParams(FusionControls fusionControls, double aNoise, double lon, double lat, String date)
+        public MyAsyncParams(FusionControls fusionControls, double aNoise, double lon, double lat, String dateTime)
         {
             this.fusionControls = fusionControls;
             noise = aNoise;
             longitude = lon;
             latitude = lat;
-            dateTime = date;
+            this.dateTime = dateTime;
         }
     }
 

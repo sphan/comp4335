@@ -23,12 +23,9 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
-import java.lang.reflect.Array;
 import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
-import java.util.LinkedList;
 
 public class UrbanNoiseActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks,
@@ -59,6 +56,8 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
     private boolean gpsEnabled;
     private boolean networkEnabled;
     private boolean isPaused;
+
+    private int lastLocationIndex;
     private MyFusionTable ft = new MyFusionTable();
 
     private SoundRecorder soundMeter;
@@ -90,6 +89,7 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
         {
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
             mLastUpdatedTime = DateFormat.getDateTimeInstance().format(new Date());
+            mCurrentDecibels = soundMeter.getMeasurement();
         }
 
         if (mRequestingLocationUpdates)
@@ -138,10 +138,11 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
     }
 
     public void onSaveInstanceState(Bundle savedInstanceState) {
-        savedInstanceState.putBoolean(Contants.REQUESTING_LOCATION_UPDATES_KEY, mRequestingLocationUpdates);
-        savedInstanceState.putParcelableArrayList(Contants.LOCATION_KEY, locations);
-        savedInstanceState.putStringArrayList(Contants.LAST_UPDATED_TIME_STRING_KEY, datetimes);
-        savedInstanceState.putBoolean(Contants.IS_PAUSED_KEY, isPaused);
+        savedInstanceState.putBoolean(Constants.REQUESTING_LOCATION_UPDATES_KEY, mRequestingLocationUpdates);
+        savedInstanceState.putParcelableArrayList(Constants.LOCATION_KEY, locations);
+        savedInstanceState.putStringArrayList(Constants.LAST_UPDATED_TIME_STRING_KEY, datetimes);
+        savedInstanceState.putBoolean(Constants.IS_PAUSED_KEY, isPaused);
+        savedInstanceState.putInt(Constants.LAST_LOCATION_INDEX_IN_LIST, locations.size());
         super.onSaveInstanceState(savedInstanceState);
     }
 
@@ -150,6 +151,8 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
         isPaused = false;
         startGetLocation();
         soundMeter.startRecording();
+        startButton.setEnabled(isPaused);
+        endButton.setEnabled(!isPaused);
     }
 
     public void stopUrbanNoiseDetection(View view)
@@ -158,14 +161,75 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
         stopGetLocation();
         soundMeter.stopRecording();
         soundMeter.resetMeter();
+        startButton.setEnabled(isPaused);
+        endButton.setEnabled(!isPaused);
     }
 
     public void viewInMap(View view)
     {
         Intent intent = new Intent(this, MyMapActivity.class);
-        intent.putExtra("locations", locations);
-        intent.putExtra("decibels", decibels);
-        startActivity(intent);
+//        intent.putExtra("locations", locations);
+//        intent.putExtra("decibels", decibels);
+//        intent.putExtra("dateTimes", datetimes);
+//        startActivity(intent);
+        startActivityForResult(intent, 1);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        Log.d(TAG, "onActivityResult is called");
+//        super.onActivityResult(requestCode, resultCode, data);
+
+        Log.d(TAG, "RETURNING FROM MAP VIEW");
+
+        if (requestCode == 1)
+        {
+            if (resultCode == RESULT_OK)
+            {
+                Bundle extras = data.getExtras();
+                if (extras != null)
+                {
+                    deviceID = extras.getString("deviceID");
+                    Log.d(TAG, "onActivityResult: deviceID: " + deviceID);
+                }
+
+//                startButton.setEnabled(isPaused);
+//                endButton.setEnabled(isPaused);
+
+                Log.d(TAG, "GETTING THE LOCATIONS, DECIBELS AND DATETIMES OBTAINED FROM MAP");
+
+                locations = (ArrayList<Location>) data.getExtras().getSerializable("locations");
+                decibels = (ArrayList<Double>) data.getExtras().getSerializable("decibels");
+                datetimes = data.getExtras().getStringArrayList("dateTimes");
+
+                if (locations == null)
+                    Log.d(TAG, "LOCATIONS IS NULL");
+
+                if (decibels == null)
+                    Log.d(TAG, "DECIBELS IS NULL");
+
+                if (datetimes == null)
+                    Log.d(TAG, "DATETIMES IS NULL");
+
+                if (locations != null && decibels != null && datetimes != null)
+                {
+                    for (int i = lastLocationIndex; i < locations.size(); ++i)
+                    {
+                        Log.d(TAG, "UPDATING THE TABLE");
+                        updateTable(locations.get(i), datetimes.get(i), decibels.get(i));
+                    }
+                }
+                else
+                {
+                    locations = new ArrayList<>();
+                    decibels = new ArrayList<>();
+                    datetimes = new ArrayList<>();
+                }
+//
+
+            }
+        }
     }
 
 //    @Override
@@ -185,6 +249,7 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "onCreate is called");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_urban_noise);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -211,6 +276,8 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
         gpsEnabled = false;
         networkEnabled = false;
         isPaused = true;
+
+        lastLocationIndex = 0;
 
         locations = (ArrayList<Location>) getIntent().getSerializableExtra("locations");
         datetimes = (ArrayList<String>) getIntent().getSerializableExtra("datetimes");
@@ -271,12 +338,13 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
                 mGoogleApiClient, mLocationRequest, this);
 
         mLastUpdatedTime = DateFormat.getDateTimeInstance().format(new Date());
+        mCurrentDecibels = soundMeter.getMeasurement();
     }
 
     protected void createLocationRequest() {
         mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(Contants.LOCATION_UPDATE_INTERVAL);
-        mLocationRequest.setFastestInterval(Contants.LOCATION_UPDATE_INTERVAL);
+        mLocationRequest.setInterval(Constants.LOCATION_UPDATE_INTERVAL);
+        mLocationRequest.setFastestInterval(Constants.LOCATION_UPDATE_INTERVAL);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
 //        Log.d(TAG, "location is enabled? " + isLocationEnabled(this));
@@ -318,27 +386,32 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
         if (savedInstanceState != null) {
             // Update the value of mRequestingLocationUpdates from the Bundle, and make sure that
             // the Start Updates and Stop Updates buttons are correctly enabled or disabled.
-            if (savedInstanceState.keySet().contains(Contants.REQUESTING_LOCATION_UPDATES_KEY)) {
+            if (savedInstanceState.keySet().contains(Constants.REQUESTING_LOCATION_UPDATES_KEY)) {
                 mRequestingLocationUpdates = savedInstanceState.getBoolean(
-                        Contants.REQUESTING_LOCATION_UPDATES_KEY);
+                        Constants.REQUESTING_LOCATION_UPDATES_KEY);
             }
 
             // Update the value of mCurrentLocation from the Bundle and update the UI to show the
             // correct latitude and longitude.
-            if (savedInstanceState.keySet().contains(Contants.LOCATION_KEY)) {
+            if (savedInstanceState.keySet().contains(Constants.LOCATION_KEY)) {
                 // Since LOCATION_KEY was found in the Bundle, we can be sure that mCurrentLocation
                 // is not null.
-                locations = savedInstanceState.getParcelableArrayList(Contants.LOCATION_KEY);
+                locations = savedInstanceState.getParcelableArrayList(Constants.LOCATION_KEY);
             }
 
             // Update the value of mLastUpdateTime from the Bundle and update the UI.
-            if (savedInstanceState.keySet().contains(Contants.LAST_UPDATED_TIME_STRING_KEY)) {
-                datetimes = savedInstanceState.getStringArrayList(Contants.LAST_UPDATED_TIME_STRING_KEY);
+            if (savedInstanceState.keySet().contains(Constants.LAST_UPDATED_TIME_STRING_KEY)) {
+                datetimes = savedInstanceState.getStringArrayList(Constants.LAST_UPDATED_TIME_STRING_KEY);
             }
 
-            if (savedInstanceState.keySet().contains(Contants.IS_PAUSED_KEY))
+            if (savedInstanceState.keySet().contains(Constants.IS_PAUSED_KEY))
             {
-                isPaused = savedInstanceState.getBoolean(Contants.IS_PAUSED_KEY);
+                isPaused = savedInstanceState.getBoolean(Constants.IS_PAUSED_KEY);
+            }
+
+            if (savedInstanceState.keySet().contains(Constants.LAST_LOCATION_INDEX_IN_LIST))
+            {
+                lastLocationIndex = savedInstanceState.getInt(Constants.LAST_LOCATION_INDEX_IN_LIST);
             }
 
             if (savedInstanceState.keySet().contains("deviceID"))
