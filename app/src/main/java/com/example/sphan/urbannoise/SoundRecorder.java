@@ -8,7 +8,6 @@ import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Environment;
 import android.util.Log;
-import android.widget.TextView;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
@@ -19,7 +18,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-
 
 /**
  * Created by sphan on 11/11/2015.
@@ -88,8 +86,8 @@ public class SoundRecorder {
 //            e.printStackTrace();
 //        }
 
-        recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, RECORDER_SAMPLE_RATE,
-                RECORDER_CHANNELS, RECORDER_AUDIO_ENCODING, BufferElement2Rec * BytesPerElement);
+        recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, Contants.RECORDER_SAMPLE_RATE,
+                Contants.RECORDER_CHANNELS, Contants.RECORDER_AUDIO_ENCODING, BufferElement2Rec * BytesPerElement);
 
         recorder.startRecording();
         isRecording = true;
@@ -150,8 +148,8 @@ public class SoundRecorder {
 
         try
         {
-            AudioTrack audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, RECORDER_SAMPLE_RATE,
-                    AudioFormat.CHANNEL_OUT_MONO, RECORDER_AUDIO_ENCODING, bufferSize, AudioTrack.MODE_STREAM);
+            AudioTrack audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, Contants.RECORDER_SAMPLE_RATE,
+                    AudioFormat.CHANNEL_OUT_MONO, Contants.RECORDER_AUDIO_ENCODING, bufferSize, AudioTrack.MODE_STREAM);
             audioTrack.play();
             InputStream inputStream = new FileInputStream(file);
 
@@ -191,23 +189,9 @@ public class SoundRecorder {
 
     private SoundRecorder() {
 //        outputFile = Environment.getExternalStorageDirectory().getAbsolutePath() + "/recording.3gp";
-        outputFile = Environment.getExternalStorageDirectory().getAbsolutePath() + "/voice16K16bitmono.pcm";
-        bufferSize = AudioRecord.getMinBufferSize(RECORDER_SAMPLE_RATE, RECORDER_CHANNELS, RECORDER_AUDIO_ENCODING);
-//        v_A = new double[BUFF_LEN];
-//        v = new double[BUFF_LEN];
-//        for(int i = 0; i < BUFF_LEN; i++) {
-//            v[i] = 0.0;
-//            v_A[i] = 0.0;
-//        }
-//        buffptr = 0;
-//        sampleCount = 0;
-//        avg_sq = 0.0;
-//        LA_eq = 0.0;
-//        offset = 0.0;
-//        soundMeasurement = new double[SECONDS];
-//        for(int i = 0; i < SECONDS; i++) {
-//            soundMeasurement[i] = 0.0;
-//        }
+        outputFile = Environment.getExternalStorageDirectory().getAbsolutePath() + "/voice8K16bitmono.pcm";
+        bufferSize = AudioRecord.getMinBufferSize(Contants.RECORDER_SAMPLE_RATE, Contants.RECORDER_CHANNELS, Contants.RECORDER_AUDIO_ENCODING);
+
         createMediaRecorder();
     }
 
@@ -280,7 +264,8 @@ public class SoundRecorder {
             }
         }
 
-        try {
+        try
+        {
             os.close();
         }
         catch (IOException e)
