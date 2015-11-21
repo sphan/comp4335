@@ -337,7 +337,7 @@ public class MyMapActivity extends AppCompatActivity implements
         decibels.add(soundMeter.getMeasurement());
         dateTimes.add(mLastUpdatedTime);
 
-        ft.postRow(mCurrentDecibels,mCurrentLocation.getLongitude(),mCurrentLocation.getLatitude());
+        ft.postRow(mCurrentDecibels,mCurrentLocation.getLongitude(),mCurrentLocation.getLatitude(), mLastUpdatedTime);
     }
 
     public void onSaveInstanceState(Bundle savedInstanceState) {
