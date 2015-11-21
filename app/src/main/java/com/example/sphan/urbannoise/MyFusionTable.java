@@ -41,9 +41,9 @@ public class MyFusionTable {
         new MyAsyncTask().execute(params);
     }
 
-    public void postRow(double noise, double lon, double lat){
+    public void postRow(double noise, double lon, double lat, String dateTime){
 
-        MyAsyncParams params = new MyAsyncParams(FusionControls.INSERT_ROW,noise,lon,lat);
+        MyAsyncParams params = new MyAsyncParams(FusionControls.INSERT_ROW,noise,lon,lat,dateTime);
         new MyAsyncTask().execute(params);
 
 
@@ -64,7 +64,7 @@ public class MyFusionTable {
                     results = getFusionTable();
                     break;
                 case INSERT_ROW:
-                    results = postRow(params[0].noise,params[0].longitude,params[0].latitude);
+                    results = postRow(params[0].noise,params[0].longitude,params[0].latitude,params[0].dateTime);
                     break;
                 default:
                     break;
@@ -95,7 +95,7 @@ public class MyFusionTable {
             return null;
         }
 
-        private String postRow(double noise, double lon, double lat){
+        private String postRow(double noise, double lon, double lat, String dateTime){
 
             try {
 
@@ -116,7 +116,7 @@ public class MyFusionTable {
                 post.addRequestProperty("Authorization", "Bearer " + access);
 
 
-                String data = "sql=INSERT INTO 1avQBdG9nc7hXAG6tlT6XEA7Qsk9CAlz5kllM_Ikd(Noise, Longitude, Latitude{, Noise,Longitude,Latitude}) VALUES("+noise+", "+lon+", "+lat+"{, "+noise+","+lon+","+lat+"})";
+                String data = "sql=INSERT INTO 1avQBdG9nc7hXAG6tlT6XEA7Qsk9CAlz5kllM_Ikd(Noise, Longitude, Latitude, Date{, Noise,Longitude,Latitude,Date}) VALUES("+noise+", "+lon+", "+lat+", "+dateTime+"{, "+noise+","+lon+","+lat+","+dateTime+"})";
 
                 DataOutputStream wr = new DataOutputStream(
                         post.getOutputStream());
@@ -179,7 +179,7 @@ public class MyFusionTable {
                     System.out.println(access + " ##################################################################################################");
                     //br.close();
                     refresh.disconnect();
-                    postRow(noise,lon,lat);
+                    postRow(noise,lon,lat, dateTime);
                     //do stuff again
                }
 
@@ -294,6 +294,7 @@ public class MyFusionTable {
         double noise;
         double longitude;
         double latitude;
+        String dateTime;
 
         public MyAsyncParams(FusionControls fusionControls)
         {
@@ -305,12 +306,13 @@ public class MyFusionTable {
             this.fusionControls = fusionControls;
             this.query = query;
         }
-        public MyAsyncParams(FusionControls fusionControls, double aNoise, double lon, double lat)
+        public MyAsyncParams(FusionControls fusionControls, double aNoise, double lon, double lat, String date)
         {
             this.fusionControls = fusionControls;
             noise = aNoise;
             longitude = lon;
             latitude = lat;
+            dateTime = date;
         }
     }
 
