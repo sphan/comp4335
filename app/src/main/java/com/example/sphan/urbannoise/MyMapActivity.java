@@ -84,6 +84,8 @@ public class MyMapActivity extends AppCompatActivity implements
     private ArrayList<Double> decibels;
     private ArrayList<String> dateTimes;
 
+    private SoundRecorder soundMeter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -135,8 +137,26 @@ public class MyMapActivity extends AppCompatActivity implements
 
         locations = (ArrayList<Location>) getIntent().getSerializableExtra("locations");
         decibels = (ArrayList<Double>) getIntent().getSerializableExtra("decibels");
+        dateTimes = getIntent().getStringArrayListExtra("dateTimes");
 
-        if (locations != null)
+        soundMeter = SoundRecorder.getInstance();
+
+        if (locations == null)
+            Log.d(TAG, "LOCATIONS IS NULL");
+        else
+            Log.d(TAG, "locations.size(): " + locations.size());
+
+        if (decibels == null)
+            Log.d(TAG, "DECIBELS IS NULL");
+        else
+            Log.d(TAG, "decibels.size(): " + decibels.size());
+
+        if (dateTimes == null)
+            Log.d(TAG, "DATETIMES IS NULL");
+        else
+            Log.d(TAG, "dateTimes.size(): " + dateTimes.size());
+
+        if (locations != null && decibels != null && dateTimes != null)
         {
             for(int i = 0; i > locations.size(); i++) {
                 Location l = locations.get(i);
@@ -145,6 +165,12 @@ public class MyMapActivity extends AppCompatActivity implements
                 int[] rgb = getColour(decibels.get(i));
                 addRedCircleOnMap(loc,rgb[0],rgb[1],rgb[2]);
             }
+        }
+        else
+        {
+            locations = new ArrayList<>();
+            decibels = new ArrayList<>();
+            dateTimes = new ArrayList<>();
         }
 
 //        Location australia = new Location(Settings.Secure.LOCATION_MODE);
@@ -166,6 +192,7 @@ public class MyMapActivity extends AppCompatActivity implements
         if (mGoogleApiClient.isConnected() && mRequestingLocationUpdates)
         {
             startLocationUpdates();
+            soundMeter.startRecording();
         }
     }
 
@@ -184,6 +211,8 @@ public class MyMapActivity extends AppCompatActivity implements
         // (http://developer.android.com/reference/com/google/android/gms/location/LocationListener.html).
         LocationServices.FusedLocationApi.requestLocationUpdates(
                 mGoogleApiClient, mLocationRequest, this);
+        mLastUpdatedTime = DateFormat.getDateTimeInstance().format(new Date());
+        mCurrentDecibels = soundMeter.getMeasurement();
     }
 
     @Override
@@ -285,6 +314,8 @@ public class MyMapActivity extends AppCompatActivity implements
     public void onLocationChanged(Location location) {
         mCurrentLocation = location;
         mLastUpdatedTime = DateFormat.getDateTimeInstance().format(new Date());
+        mCurrentDecibels = soundMeter.getMeasurement();
+
         int[] rgb;
         if(decibels != null && decibels.size() > 0) {
             mCurrentDecibels = decibels.get(0);
@@ -298,6 +329,11 @@ public class MyMapActivity extends AppCompatActivity implements
         double[] point = coord.getGridpoint();
         addRedCircleOnMap(new LatLng(point[0], point[1]), rgb[0], rgb[1], rgb[2]);
 //        updateUI();
+
+        Log.d(TAG, "ADDING LOCATIONS, DECIBELS AND DATETIMES TO ARRAYLIST");
+        locations.add(mCurrentLocation);
+        decibels.add(soundMeter.getMeasurement());
+        dateTimes.add(mLastUpdatedTime);
     }
 
     public void onSaveInstanceState(Bundle savedInstanceState) {
@@ -314,6 +350,26 @@ public class MyMapActivity extends AppCompatActivity implements
                 .radius(CIRCLE_RADIUS)
                 .fillColor(Color.rgb(r, g, b))
                 .strokeColor(Color.rgb(r, g, b)));
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent();
+
+        Log.d(TAG, "PUTTING IN LOCATIONS");
+        intent.putExtra("locations", locations);
+        Log.d(TAG, "PUTTING IN DECIBELS");
+        intent.putExtra("decibels", decibels);
+        Log.d(TAG, "PUTTING IN DATETIMES");
+        intent.putExtra("dateTimes", dateTimes);
+        Log.d(TAG, "PUTTING IN DEVICEID");
+        intent.putExtra("deviceID", deviceID);
+
+
+        setResult(RESULT_OK, intent);
+        finish();
+        super.onBackPressed();
+
     }
 
     private int[] getColour(double dB) {

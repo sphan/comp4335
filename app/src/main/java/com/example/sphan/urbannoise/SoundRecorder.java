@@ -4,15 +4,11 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioRecord;
 import android.media.AudioTrack;
-import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Environment;
 import android.util.Log;
 
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -86,8 +82,8 @@ public class SoundRecorder {
 //            e.printStackTrace();
 //        }
 
-        recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, Contants.RECORDER_SAMPLE_RATE,
-                Contants.RECORDER_CHANNELS, Contants.RECORDER_AUDIO_ENCODING, BufferElement2Rec * BytesPerElement);
+        recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, Constants.RECORDER_SAMPLE_RATE,
+                Constants.RECORDER_CHANNELS, Constants.RECORDER_AUDIO_ENCODING, BufferElement2Rec * BytesPerElement);
 
         recorder.startRecording();
         isRecording = true;
@@ -148,8 +144,8 @@ public class SoundRecorder {
 
         try
         {
-            AudioTrack audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, Contants.RECORDER_SAMPLE_RATE,
-                    AudioFormat.CHANNEL_OUT_MONO, Contants.RECORDER_AUDIO_ENCODING, bufferSize, AudioTrack.MODE_STREAM);
+            AudioTrack audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, Constants.RECORDER_SAMPLE_RATE,
+                    AudioFormat.CHANNEL_OUT_MONO, Constants.RECORDER_AUDIO_ENCODING, bufferSize, AudioTrack.MODE_STREAM);
             audioTrack.play();
             InputStream inputStream = new FileInputStream(file);
 
@@ -190,7 +186,7 @@ public class SoundRecorder {
     private SoundRecorder() {
 //        outputFile = Environment.getExternalStorageDirectory().getAbsolutePath() + "/recording.3gp";
         outputFile = Environment.getExternalStorageDirectory().getAbsolutePath() + "/voice8K16bitmono.pcm";
-        bufferSize = AudioRecord.getMinBufferSize(Contants.RECORDER_SAMPLE_RATE, Contants.RECORDER_CHANNELS, Contants.RECORDER_AUDIO_ENCODING);
+        bufferSize = AudioRecord.getMinBufferSize(Constants.RECORDER_SAMPLE_RATE, Constants.RECORDER_CHANNELS, Constants.RECORDER_AUDIO_ENCODING);
 
         createMediaRecorder();
     }

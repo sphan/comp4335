@@ -5,7 +5,6 @@ import android.os.AsyncTask;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -76,8 +75,8 @@ public class MyFusionTable {
         private String getFusionTable()
         {
             try {
-                URL getTableURL = new URL("https://www.googleapis.com/fusiontables/v2/tables/" + Contants.FUSION_TABLE_ID +
-                        "?key=" + Contants.API_KEY);
+                URL getTableURL = new URL("https://www.googleapis.com/fusiontables/v2/tables/" + Constants.FUSION_TABLE_ID +
+                        "?key=" + Constants.API_KEY);
                 HttpsURLConnection connection = (HttpsURLConnection) getTableURL.openConnection();
 
                 print_content(connection);

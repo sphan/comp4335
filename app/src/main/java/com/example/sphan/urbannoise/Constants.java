@@ -5,7 +5,7 @@ import android.media.AudioFormat;
 /**
  * Created by sphan on 21/11/2015.
  */
-public class Contants {
+public class Constants {
 
     // for location updates
     public static final long LOCATION_UPDATE_INTERVAL = 5 * 1000; // 5 milliseconds
@@ -13,6 +13,7 @@ public class Contants {
     public final static String LOCATION_KEY = "location-key";
     public final static String LAST_UPDATED_TIME_STRING_KEY = "last-updated-time-string-key";
     public final static String IS_PAUSED_KEY = "is-paused-key";
+    public final static String LAST_LOCATION_INDEX_IN_LIST = "last-location-index-in-list";
 
     // Sound Recording
     public static final int RECORDER_SAMPLE_RATE = 8000;
