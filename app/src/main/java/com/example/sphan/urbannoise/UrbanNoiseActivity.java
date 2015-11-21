@@ -479,7 +479,7 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
 //        deviceTextView.setText(deviceID);
 
         dataTable.addView(row);
-        ft.postRow(10,mCurrentLocation.getLongitude(),mCurrentLocation.getLatitude());
+        ft.postRow(decibels,mCurrentLocation.getLongitude(),mCurrentLocation.getLatitude());
     }
 
     private void startGetLocation()

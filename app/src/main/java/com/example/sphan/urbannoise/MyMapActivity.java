@@ -86,6 +86,8 @@ public class MyMapActivity extends AppCompatActivity implements
 
     private SoundRecorder soundMeter;
 
+    private MyFusionTable ft = new MyFusionTable();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -334,6 +336,8 @@ public class MyMapActivity extends AppCompatActivity implements
         locations.add(mCurrentLocation);
         decibels.add(soundMeter.getMeasurement());
         dateTimes.add(mLastUpdatedTime);
+
+        ft.postRow(mCurrentDecibels,mCurrentLocation.getLongitude(),mCurrentLocation.getLatitude());
     }
 
     public void onSaveInstanceState(Bundle savedInstanceState) {
