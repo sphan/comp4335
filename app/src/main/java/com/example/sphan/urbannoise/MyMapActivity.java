@@ -70,6 +70,7 @@ public class MyMapActivity extends AppCompatActivity implements
     private Location mCurrentLocation;
     private LocationRequest mLocationRequest;
     private LocationManager locationManager;
+    private double mCurrentDecibels;
 
     private TextView latitudeTextView;
     private TextView longitudeTextView;
@@ -80,6 +81,7 @@ public class MyMapActivity extends AppCompatActivity implements
     private boolean networkEnabled;
 
     private ArrayList<Location> locations;
+    private ArrayList<Double> decibels;
     private ArrayList<String> dateTimes;
 
     @Override
@@ -132,12 +134,16 @@ public class MyMapActivity extends AppCompatActivity implements
         }
 
         locations = (ArrayList<Location>) getIntent().getSerializableExtra("locations");
+        decibels = (ArrayList<Double>) getIntent().getSerializableExtra("decibels");
 
         if (locations != null)
         {
-            for (Location l : locations)
-            {
+            for(int i = 0; i > locations.size(); i++) {
+                Location l = locations.get(i);
                 updateLocationOnMap(l);
+                LatLng loc = new LatLng(l.getLatitude(),l.getLongitude());
+                int[] rgb = getColour(decibels.get(i));
+                addRedCircleOnMap(loc,rgb[0],rgb[1],rgb[2]);
             }
         }
 
@@ -185,6 +191,9 @@ public class MyMapActivity extends AppCompatActivity implements
 
         Log.i(TAG, "Location service connected");
         mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        if(decibels != null && decibels.size() > 0) {
+            mCurrentDecibels = decibels.get(0);
+        }
         Toast.makeText(this, "GoogleApiClient connected", Toast.LENGTH_LONG).show();
 
         if (mCurrentLocation == null)
@@ -276,12 +285,18 @@ public class MyMapActivity extends AppCompatActivity implements
     public void onLocationChanged(Location location) {
         mCurrentLocation = location;
         mLastUpdatedTime = DateFormat.getDateTimeInstance().format(new Date());
-
+        int[] rgb;
+        if(decibels != null && decibels.size() > 0) {
+            mCurrentDecibels = decibels.get(0);
+            rgb = getColour(mCurrentDecibels);
+        } else {
+            rgb = new int[]{255,0,0};
+        }
         Log.d(TAG, "my location: " + mCurrentLocation.toString());
         updateLocationOnMap(location);
         CoordConverter coord = new CoordConverter(location.getLatitude(),location.getLongitude());
         double[] point = coord.getGridpoint();
-        addRedCircleOnMap(new LatLng(point[0], point[1]));
+        addRedCircleOnMap(new LatLng(point[0], point[1]), rgb[0], rgb[1], rgb[2]);
 //        updateUI();
     }
 
@@ -292,13 +307,22 @@ public class MyMapActivity extends AppCompatActivity implements
         super.onSaveInstanceState(savedInstanceState);
     }
 
-    public void addRedCircleOnMap(LatLng latLng)
+    public void addRedCircleOnMap(LatLng latLng, int r, int g, int b)
     {
         googleMap.addCircle(new CircleOptions()
                 .center(latLng)
                 .radius(CIRCLE_RADIUS)
-                .fillColor(Color.RED)
-                .strokeColor(Color.RED));
+                .fillColor(Color.rgb(r, g, b))
+                .strokeColor(Color.rgb(r, g, b)));
+    }
+
+    private int[] getColour(double dB) {
+        int r,g,b;
+        dB = 100.0*(dB-30)/(70-30);
+        r = Math.max(0, Math.min(255,(int)(dB*2.55)));
+        g = 0*Math.max(0, 255-Math.abs((int)((dB-50)*5.5)));
+        b = Math.max(0, Math.min(255,(int)((100-dB)*2.55)));
+        return new int[]{r,g,b};
     }
 
 //    @Override

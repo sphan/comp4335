@@ -49,6 +49,7 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
     private String mLastUpdatedTime;
     private String deviceID;
     private Location mCurrentLocation;
+    private double mCurrentDecibels;
     private LocationRequest mLocationRequest;
     private LocationManager locationManager;
     private Button startButton;
@@ -56,6 +57,7 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
     private Button viewOnMapButton;
 
     private ArrayList<Location> locations;
+    private ArrayList<Double> decibels;
     private ArrayList<String> datetimes;
 
 
@@ -64,6 +66,7 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
     private boolean networkEnabled;
     private boolean isPaused;
 
+    private SoundRecorder soundMeter;
 
     @Override
     public void onConnected(Bundle bundle) {
@@ -129,12 +132,14 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
     public void onLocationChanged(Location location) {
         mCurrentLocation = location;
         mLastUpdatedTime = DateFormat.getDateTimeInstance().format(new Date());
+        mCurrentDecibels = soundMeter.getMeasurement();
 
         locations.add(mCurrentLocation);
         datetimes.add(mLastUpdatedTime);
+        decibels.add(soundMeter.getMeasurement());
 
         Log.d(TAG, "my location: " + mCurrentLocation.toString());
-        updateTable(mCurrentLocation, mLastUpdatedTime);
+        updateTable(mCurrentLocation, mLastUpdatedTime, mCurrentDecibels);
     }
 
     public void onSaveInstanceState(Bundle savedInstanceState) {
@@ -149,18 +154,22 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
     {
         isPaused = false;
         startGetLocation();
+        soundMeter.startRecording();
     }
 
     public void stopUrbanNoiseDetection(View view)
     {
         isPaused = true;
         stopGetLocation();
+        soundMeter.stopRecording();
+        soundMeter.resetMeter();
     }
 
     public void viewInMap(View view)
     {
         Intent intent = new Intent(this, MyMapActivity.class);
         intent.putExtra("locations", locations);
+        intent.putExtra("decibels", decibels);
         startActivity(intent);
     }
 
@@ -210,6 +219,7 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
 
         locations = (ArrayList<Location>) getIntent().getSerializableExtra("locations");
         datetimes = (ArrayList<String>) getIntent().getSerializableExtra("datetimes");
+        decibels = (ArrayList<Double>) getIntent().getSerializableExtra("decibels");
 
         if (locations == null)
         {
@@ -221,6 +231,9 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
             datetimes = new ArrayList<>();
         }
 
+        if(decibels == null) {
+            decibels = new ArrayList<>();
+        }
 //        mGoogleApiClient.connect();
 
         Bundle extras = getIntent().getExtras();
@@ -229,6 +242,7 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
             deviceID = extras.getString("deviceID");
         }
 
+        soundMeter = SoundRecorder.getInstance();
         Log.d(TAG, "I'm here");
     }
 
@@ -340,7 +354,7 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
 
             for (int i = 0; i < locations.size(); ++i)
             {
-                updateTable(locations.get(i), datetimes.get(i));
+                updateTable(locations.get(i), datetimes.get(i), decibels.get(i));
                 Log.d(TAG, "updating table for item #" + i);
             }
         }
@@ -370,7 +384,7 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
         dialog.show();
     }
 
-    private void updateTable(Location location, String dateTime)
+    private void updateTable(Location location, String dateTime, double decibels)
     {
         if (mCurrentLocation == null)
         {
@@ -391,7 +405,7 @@ public class UrbanNoiseActivity extends AppCompatActivity implements
         locationTextView.setText(String.valueOf(gridpoint[0]).substring(0,8) + "," +  String.valueOf(gridpoint[1]).substring(0,8));
 
         TextView dbmLevelTextView = (TextView) row.findViewById(R.id.dbmLevelTextView);
-        dbmLevelTextView.setText(String.valueOf(10));
+        dbmLevelTextView.setText(String.valueOf(decibels));
 
 //        TextView deviceTextView = (TextView) row.findViewById(R.id.deviceTextView);
 //        deviceTextView.setText(deviceID);

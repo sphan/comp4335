@@ -43,25 +43,26 @@ public class SoundRecorder {
     private String outputFile;
     private int bufferSize;
 
-    //filter coefficients
-    private static final double[] a = {0.0, 2.1856, -0.7403, -1.0831, 0.6863, -0.2274, 0.2507,
-            -0.0058, -0.0821, 0.0153, 0.0004};
-    private static final double[] b = {0.9299, -2.1889, 0.7541, 1.3229, -0.7728, 0.1025, -0.2398,
-            -0.0098, 0.1154, -0.0103, -0.0033};
-
-    //10th order filter
-    private static final int BUFF_LEN = 11;
-    private double[] v_A;
-    private double[] v;
-    private double offset;
-    private int buffptr;
-    private int sampleCount;
-    private double avg_sq;
-    double LA_eq;
-
-    //store SECONDS seconds worth of sound measurements
-    private static final int SECONDS = 120;
-    private double[] soundMeasurement;
+//    //filter coefficients
+//    private static final double[] a = {0.0, 2.1856, -0.7403, -1.0831, 0.6863, -0.2274, 0.2507,
+//            -0.0058, -0.0821, 0.0153, 0.0004};
+//    private static final double[] b = {0.9299, -2.1889, 0.7541, 1.3229, -0.7728, 0.1025, -0.2398,
+//            -0.0098, 0.1154, -0.0103, -0.0033};
+//
+//    //10th order filter
+//    private static final int BUFF_LEN = 11;
+//    private double[] v_A;
+//    private double[] v;
+//    private double offset;
+//    private int buffptr;
+//    private int sampleCount;
+//    private double avg_sq;
+//    double LA_eq;
+//
+//    //store SECONDS seconds worth of sound measurements
+//    private static final int SECONDS = 120;
+//    private double[] soundMeasurement;
+    private static SoundMeter soundMeter = SoundMeter.getInstance();
 
     public static SoundRecorder getInstance() {
         return ourInstance;
@@ -192,21 +193,21 @@ public class SoundRecorder {
 //        outputFile = Environment.getExternalStorageDirectory().getAbsolutePath() + "/recording.3gp";
         outputFile = Environment.getExternalStorageDirectory().getAbsolutePath() + "/voice16K16bitmono.pcm";
         bufferSize = AudioRecord.getMinBufferSize(RECORDER_SAMPLE_RATE, RECORDER_CHANNELS, RECORDER_AUDIO_ENCODING);
-        v_A = new double[BUFF_LEN];
-        v = new double[BUFF_LEN];
-        for(int i = 0; i < BUFF_LEN; i++) {
-            v[i] = 0.0;
-            v_A[i] = 0.0;
-        }
-        buffptr = 0;
-        sampleCount = 0;
-        avg_sq = 0.0;
-        LA_eq = 0.0;
-        offset = 0.0;
-        soundMeasurement = new double[SECONDS];
-        for(int i = 0; i < SECONDS; i++) {
-            soundMeasurement[i] = 0.0;
-        }
+//        v_A = new double[BUFF_LEN];
+//        v = new double[BUFF_LEN];
+//        for(int i = 0; i < BUFF_LEN; i++) {
+//            v[i] = 0.0;
+//            v_A[i] = 0.0;
+//        }
+//        buffptr = 0;
+//        sampleCount = 0;
+//        avg_sq = 0.0;
+//        LA_eq = 0.0;
+//        offset = 0.0;
+//        soundMeasurement = new double[SECONDS];
+//        for(int i = 0; i < SECONDS; i++) {
+//            soundMeasurement[i] = 0.0;
+//        }
         createMediaRecorder();
     }
 
@@ -241,7 +242,9 @@ public class SoundRecorder {
         {
             recorder.read(sData, 0, BufferElement2Rec);
             Log.d(TAG, "byte writing to file " + sData.toString());
-            int i = 0;
+            soundMeter.logSound(sData);
+
+/*            int i = 0;
 
             for(; i < sData.length; i++) {
                 v[buffptr] = sData[i];
@@ -265,7 +268,7 @@ public class SoundRecorder {
                     sampleCount = 0;
                     Log.d(TAG, "Sound level: " + LA_eq + " dBA");
                 }
-            }
+            }*/
             try
             {
                 byte bData[] = short2byte(sData);
@@ -299,15 +302,46 @@ public class SoundRecorder {
         return bytes;
     }
 
-    public double[] getMeasurements(int nSeconds) {
-        double[] m = new double[Math.min(nSeconds,SECONDS)];
-        for(int i = 0; i < m.length; i++) {
-            m[i] = soundMeasurement[i];
-        }
-        return m;
+    public void startMeasurment() {
+        recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, RECORDER_SAMPLE_RATE,
+                RECORDER_CHANNELS, RECORDER_AUDIO_ENCODING, BufferElement2Rec * BytesPerElement);
+
+        recorder.startRecording();
+        isRecording = true;
+        recordingThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                measureSound();
+            }
+        }, "AudioRecorder Thread");
+        recordingThread.start();
     }
 
-    public double getMeasurment(int secondsAgo) {
-        return soundMeasurement[Math.min(secondsAgo,SECONDS)];
+    public void measureSound() {
+        short[] sData = new short[BufferElement2Rec];
+        while(isRecording) {
+            recorder.read(sData, 0, BufferElement2Rec);
+            soundMeter.logSound(sData);
+        }
     }
+
+    public double getMeasurement() {
+        return soundMeter.getMeasurment(0);
+    }
+
+    public void resetMeter() {
+        soundMeter.clear();
+    }
+
+//    public double[] getMeasurements(int nSeconds) {
+//        double[] m = new double[Math.min(nSeconds,SECONDS)];
+//        for(int i = 0; i < m.length; i++) {
+//            m[i] = soundMeasurement[i];
+//        }
+//        return m;
+//    }
+//
+//    public double getMeasurment(int secondsAgo) {
+//        return soundMeasurement[Math.min(secondsAgo,SECONDS)];
+//    }
 }

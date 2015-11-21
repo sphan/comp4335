@@ -57,6 +57,7 @@ public class SoundRecordingActivity extends AppCompatActivity {
     public void stopRecording(View view)
     {
         mySoundRecorder.stopRecording();
+        mySoundRecorder.resetMeter();
         stopRecordingButton.setEnabled(false);
         startPlayingButton.setEnabled(true);
         startRecordingButton.setEnabled(true);
