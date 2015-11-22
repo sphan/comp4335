@@ -27,6 +27,7 @@ public class DataReconstructor {
             return;
         }
         gridpoints = new ArrayList<>();
+        edges = new ArrayList<>();
         recon = new ArrayList<>();
         mst = new ArrayList<>();
         GridPoint m;
