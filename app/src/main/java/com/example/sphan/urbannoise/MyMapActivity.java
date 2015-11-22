@@ -196,7 +196,7 @@ public class MyMapActivity extends AppCompatActivity implements
 
         try {
             ft.getRows();
-            ft.setHour(Integer.parseInt(splitTime[0]),currentDate.contains("am"));
+            ft.setHour(Integer.parseInt(splitTime[0]), currentDate.contains("am"));
         } catch (ExecutionException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
@@ -208,12 +208,26 @@ public class MyMapActivity extends AppCompatActivity implements
         //ArrayList<LatLng> prevLatLon = new ArrayList<LatLng>();
         int counter = 0;
         LatLng loc;
-        while(!prevLat.isEmpty() && !prevLon.isEmpty() && prevLat.size()>counter && prevLon.size()>counter){
-            loc = new LatLng(prevLat.get(counter),prevLon.get(counter));
+        if(prevLat.size() != prevNoise.size() || prevLon.size() != prevLat.size() || prevLon.size() != prevNoise.size()) {
 
-            int[] rgb = getColour(prevNoise.get(counter));
-            addRedCircleOnMap(loc,rgb[0],rgb[1],rgb[2]);
-            counter++;
+            while (!prevLat.isEmpty() && !prevLon.isEmpty() && prevLat.size() > counter && prevLon.size() > counter) {
+                loc = new LatLng(prevLat.get(counter), prevLon.get(counter));
+
+                int[] rgb = getColour(prevNoise.get(counter));
+                addRedCircleOnMap(loc, rgb[0], rgb[1], rgb[2]);
+                counter++;
+            }
+        } else {
+            LatLng myLoc = new LatLng(mCurrentLocation.getLatitude(),mCurrentLocation.getLongitude());
+            ArrayList<LatLng> locationData = ft.getLoc();
+            DataReconstructor recon = new DataReconstructor(locationData,prevNoise,myLoc);
+            locationData = recon.getLocationData();
+            prevNoise = recon.getNoiseData();
+            int[] rgb;
+            for(int i = 0; i < locationData.size(); i++) {
+                rgb = getColour(prevNoise.get(i));
+                addRedCircleOnMap(locationData.get(i),rgb[0],rgb[1],rgb[2]);
+            }
         }
 
 
