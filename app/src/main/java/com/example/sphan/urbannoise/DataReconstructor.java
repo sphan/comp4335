@@ -26,6 +26,8 @@ public class DataReconstructor {
             gridpoints = null;
             return;
         }
+        locationData = new ArrayList<>();
+        noiseData = new ArrayList<>();
         gridpoints = new ArrayList<>();
         edges = new ArrayList<>();
         recon = new ArrayList<>();
