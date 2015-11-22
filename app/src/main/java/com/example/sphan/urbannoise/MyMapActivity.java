@@ -165,7 +165,7 @@ public class MyMapActivity extends AppCompatActivity implements
                 Location l = locations.get(i);
                 updateLocationOnMap(l);
                 LatLng loc = new LatLng(l.getLatitude(),l.getLongitude());
-                int[] rgb = getColour(decibels.get(i));
+                int[] rgb = getColour(20,80,decibels.get(i));
                 addRedCircleOnMap(loc,rgb[0],rgb[1],rgb[2]);
             }
         }
@@ -213,11 +213,11 @@ public class MyMapActivity extends AppCompatActivity implements
             while (!prevLat.isEmpty() && !prevLon.isEmpty() && prevLat.size() > counter && prevLon.size() > counter) {
                 loc = new LatLng(prevLat.get(counter), prevLon.get(counter));
 
-                int[] rgb = getColour(prevNoise.get(counter));
+                int[] rgb = getColour(20,80,prevNoise.get(counter));
                 addRedCircleOnMap(loc, rgb[0], rgb[1], rgb[2]);
                 counter++;
             }
-        } else {
+        } else if(mCurrentLocation != null){
             LatLng myLoc = new LatLng(mCurrentLocation.getLatitude(),mCurrentLocation.getLongitude());
             ArrayList<LatLng> locationData = ft.getLoc();
             DataReconstructor recon = new DataReconstructor(locationData,prevNoise,myLoc);
@@ -225,7 +225,7 @@ public class MyMapActivity extends AppCompatActivity implements
             prevNoise = recon.getNoiseData();
             int[] rgb;
             for(int i = 0; i < locationData.size(); i++) {
-                rgb = getColour(prevNoise.get(i));
+                rgb = getColour(20,80,prevNoise.get(i));
                 addRedCircleOnMap(locationData.get(i),rgb[0],rgb[1],rgb[2]);
             }
         }
@@ -374,7 +374,7 @@ public class MyMapActivity extends AppCompatActivity implements
         int[] rgb;
         if(decibels != null && decibels.size() > 0) {
             mCurrentDecibels = decibels.get(0);
-            rgb = getColour(mCurrentDecibels);
+            rgb = getColour(20,80,mCurrentDecibels);
         } else {
             rgb = new int[]{255,0,0};
         }
@@ -429,12 +429,16 @@ public class MyMapActivity extends AppCompatActivity implements
 
     }
 
-    private int[] getColour(double dB) {
+    private int[] getColour(double min,double max, double dB) {
         int r,g,b;
-        dB = 100.0*(dB-30)/(70-30);
-        r = Math.max(0, Math.min(255,(int)(dB*2.55)));
-        g = 0*Math.max(0, 255-Math.abs((int)((dB-50)*5.5)));
-        b = Math.max(0, Math.min(255,(int)((100-dB)*2.55)));
+//        dB = 100.0*(dB-30)/(70-30);
+//        r = Math.max(0, Math.min(255,(int)(dB*2.55)));
+//        g = 0*Math.max(0, 255-Math.abs((int)((dB-50)*5.5)));
+//        b = Math.max(0, Math.min(255,(int)((100-dB)*2.55)));
+        dB = (dB-min)/(max-min);
+        b = (int)Math.max(0, 255*(1-dB));
+        r = (int)Math.max(0, 255*(dB-1));
+        g = 255- b - r;
         return new int[]{r,g,b};
     }
 
