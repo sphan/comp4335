@@ -50,6 +50,7 @@ public class MyLocationActivity extends AppCompatActivity implements
     private TextView latitudeTextView;
     private TextView longitudeTextView;
     private TextView timeLastUpdatedTextView;
+    private TextView MGRSTextView;
 
     private boolean mRequestingLocationUpdates;
     private boolean gpsEnabled;
@@ -78,6 +79,7 @@ public class MyLocationActivity extends AppCompatActivity implements
         latitudeTextView = (TextView) findViewById(R.id.latitudeTextview);
         longitudeTextView = (TextView) findViewById(R.id.longitudeTextview);
         timeLastUpdatedTextView = (TextView) findViewById(R.id.lastUpdatedTextView);
+        MGRSTextView = (TextView) findViewById(R.id.MGRSTextview);
         mRequestingLocationUpdates = true;
         gpsEnabled = false;
         networkEnabled = false;
@@ -309,6 +311,7 @@ public class MyLocationActivity extends AppCompatActivity implements
             latitudeTextView.setText(String.valueOf(mCurrentLocation.getLatitude()));
             longitudeTextView.setText(String.valueOf(mCurrentLocation.getLongitude()));
             timeLastUpdatedTextView.setText(String.valueOf(mLastUpdatedTime));
+            MGRSTextView.setText(new CoordConverter(mCurrentLocation.getLatitude(),mCurrentLocation.getLongitude()).getMGRS());
         }
         else
         {

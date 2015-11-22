@@ -32,4 +32,11 @@
         android:text="Time last updated"
         android:id="@+id/lastUpdatedTextView" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="MGRS"
+        android:id="@+id/MGRSTextview" />
+
 </LinearLayout>

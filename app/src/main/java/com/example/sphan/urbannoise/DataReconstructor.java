@@ -5,6 +5,7 @@ import android.location.Location;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
@@ -21,11 +22,12 @@ public class DataReconstructor {
     private ArrayList<LatLng> locationData;
     private ArrayList<Double> noiseData;
 
-    public DataReconstructor(ArrayList<LatLng> latLngs, ArrayList<Double> dBs) {
+    public DataReconstructor(ArrayList<LatLng> latLngs, ArrayList<Double> dBs, LatLng myLocation) {
         if(latLngs == null || dBs == null || latLngs.size() != dBs.size()) {
             gridpoints = null;
             return;
         }
+        GridPoint myGridpoint = new GridPoint(myLocation.latitude, myLocation.longitude, 0);
         locationData = new ArrayList<>();
         noiseData = new ArrayList<>();
         gridpoints = new ArrayList<>();
@@ -34,21 +36,29 @@ public class DataReconstructor {
         mst = new ArrayList<>();
         GridPoint m;
         Edge e;
+        Edge toMe;
         for(int i = 0; i < latLngs.size(); i++) {
             m = new GridPoint(latLngs.get(i).latitude,latLngs.get(i).longitude,dBs.get(i));
+            toMe = new Edge(myGridpoint,m);
             int index = gridpoints.indexOf(m);
             if(index != -1) {
                 gridpoints.get(index).updateNoise(dBs.get(i));
             } else {
-                gridpoints.add(m);
-                for(int j = 0; j < gridpoints.size(); j++) {
+                boolean added = false;
+                int len = gridpoints.size();
+                for(int j = 0; j < len; j++) {
                     e = new Edge(gridpoints.get(j),m);
-                    if(e.getCost() < 200 && e.getCost() != 0) {
+                    if((e.getCost() < 200 || toMe.getCost() < 200) && e.getCost() != 0) {
                         edges.add(e);
+                        if(!added) {
+                            gridpoints.add(m);
+                            added = true;
+                        }
                     }
                 }
             }
         }
+
         calcMST();
         for(Edge edge : mst) {
             ArrayList<GridPoint> toAdd = edge.inBetween();
@@ -66,7 +76,7 @@ public class DataReconstructor {
         }
         LatLng nLocation;
         Double nNoise;
-        for(GridPoint p : gridpoints) {
+        for(GridPoint p : recon) {
             nLocation = new LatLng(p.getRawLat(),p.getRawLng());
             nNoise = new Double(p.getNoise());
             locationData.add(nLocation);
@@ -82,11 +92,17 @@ public class DataReconstructor {
         return this.noiseData;
     }
 
-    private ArrayList<Edge> calcMST() {
-        return null;
+    private void calcMST() {
+        Collections.sort(edges);
+        ArrayList<GridPoint> seen = new ArrayList<>();
+        for(Edge e : edges) {
+            if(!(seen.contains(e.u) && seen.contains(e.v))) {
+                mst.add(e);
+            }
+        }
     }
 
-    private class Edge {
+    private class Edge implements Comparable<Edge>{
         private GridPoint u, v;
         private double cost;
 
@@ -127,6 +143,11 @@ public class DataReconstructor {
             }
 
             return between;
+        }
+
+        @Override
+        public int compareTo(Edge e) {
+            return new Double(cost).compareTo(e.getCost());
         }
     }
 
