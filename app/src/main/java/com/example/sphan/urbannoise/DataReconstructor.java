@@ -90,7 +90,7 @@ public class DataReconstructor {
         public Edge(GridPoint u, GridPoint v) {
             this.u = u;
             this.v = v;
-            double cost = u.dist(v);
+            cost = u.dist(v);
         }
 
         public double getCost() {
