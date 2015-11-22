@@ -242,7 +242,7 @@ public class MyMapActivity extends AppCompatActivity implements
         // (http://developer.android.com/reference/com/google/android/gms/location/LocationListener.html).
         LocationServices.FusedLocationApi.requestLocationUpdates(
                 mGoogleApiClient, mLocationRequest, this);
-        mLastUpdatedTime = DateFormat.getDateTimeInstance().format(new Date());
+        mLastUpdatedTime = Constants.DATE_FORMAT.format(new Date());
         mCurrentDecibels = soundMeter.getMeasurement();
     }
 
@@ -275,7 +275,7 @@ public class MyMapActivity extends AppCompatActivity implements
                 (mGoogleApiClient.isConnected() && mLocationRequest != null))
         {
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
-            mLastUpdatedTime = DateFormat.getDateTimeInstance().format(new Date());
+            mLastUpdatedTime = Constants.DATE_FORMAT.format(new Date());
             updateLocationOnMap(mCurrentLocation);
 //            updateUI();
         }
@@ -344,7 +344,7 @@ public class MyMapActivity extends AppCompatActivity implements
     @Override
     public void onLocationChanged(Location location) {
         mCurrentLocation = location;
-        mLastUpdatedTime = DateFormat.getDateTimeInstance().format(new Date());
+        mLastUpdatedTime = Constants.DATE_FORMAT.format(new Date());
         mCurrentDecibels = soundMeter.getMeasurement();
 
         int[] rgb;

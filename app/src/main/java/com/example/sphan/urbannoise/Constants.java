@@ -2,6 +2,9 @@ package com.example.sphan.urbannoise;
 
 import android.media.AudioFormat;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+
 /**
  * Created by sphan on 21/11/2015.
  */
@@ -39,4 +42,6 @@ public class Constants {
     public static final String FUSION_TABLE_READ_WRITE_SCOPE = "https://www.googleapis.com/auth/fusiontables";
     public static final String FUSION_TABLE_ID = "14ALgkufsxji6YtwRCLzsLP6Xgxijlbx3BCzP0aED";
 
+    // date time
+    public static final DateFormat DATE_FORMAT = new SimpleDateFormat("dd MMM yyyy hh:mm:ss a");
 }
