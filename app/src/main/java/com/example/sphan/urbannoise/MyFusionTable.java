@@ -115,7 +115,8 @@ public class MyFusionTable {
                 post.addRequestProperty("Authorization", "Bearer " + access);
 
 
-                String data = "sql=INSERT INTO 1avQBdG9nc7hXAG6tlT6XEA7Qsk9CAlz5kllM_Ikd(Noise, Longitude, Latitude, Date{, Noise,Longitude,Latitude,Date}) VALUES("+noise+", "+lon+", "+lat+", "+dateTime+"{, "+noise+","+lon+","+lat+", "+dateTime+"})";
+                String data = "sql=INSERT INTO 1avQBdG9nc7hXAG6tlT6XEA7Qsk9CAlz5kllM_Ikd(Noise, Longitude, Latitude, Date{, Noise,Longitude,Latitude,Date}) VALUES("+noise+", "+lon+", "+lat+", '"+dateTime+"'{, "+noise+","+lon+","+lat+", '"+dateTime+"'})";
+                //String data = "sql=INSERT INTO 1avQBdG9nc7hXAG6tlT6XEA7Qsk9CAlz5kllM_Ikd(Noise, Longitude, Latitude{, Noise,Longitude,Latitude}) VALUES("+noise+", "+lon+", "+lat+"{, "+noise+","+lon+","+lat+"})";
 
                 DataOutputStream wr = new DataOutputStream(
                         post.getOutputStream());
