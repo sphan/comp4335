@@ -98,6 +98,44 @@ public class MyFusionTable {
 
 
 
+    public void setHour(int hour,Boolean am){
+
+        System.out.println("current hour is " + hour + "boolean ====== " +am);
+        int counter = 0;
+        // Boolean removed = false;
+        while(date.size()>counter){
+            if(date.get(counter).contains(hour+":")){
+                if((am && date.get(counter).contains("am")) || (am==false&&date.get(counter).contains("pm"))){
+                    System.out.println("yesyes");
+
+                }else{
+                    date.remove(counter);
+                    lat.remove(counter);
+                    lon.remove(counter);
+                    noise.remove(counter);
+                    System.out.println("nonononon");
+                }
+
+                //      }else if(date.get(counter).contains((hour+12)+":") && !am){
+
+            }else{
+                date.remove(counter);
+                lat.remove(counter);
+                lon.remove(counter);
+                noise.remove(counter);
+                System.out.println("nonononon");
+            }
+
+
+            counter++;
+        }
+
+    }
+
+
+
+
+
     private class MyAsyncTask extends AsyncTask<MyAsyncParams, Void, String>
     {
 /*
@@ -205,7 +243,7 @@ public class MyFusionTable {
                 Matcher m = p.matcher(wholeMessage);
                 System.out.println("___________________________________");
                 System.out.println(wholeMessage);
-              //  int counterNoise = 0;
+                //  int counterNoise = 0;
               // int counterLat = 0;
                // int counterLon = 0;
                // int counterDate = 0;
